@@ -11,14 +11,28 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "pnpm build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "db:prod:generate": "drizzle-kit generate --config services/api/drizzle.config.ts",
+    "db:prod:migrate": "drizzle-kit migrate --config services/api/drizzle.config.ts",
+    "api:dev": "tsx watch services/api/src/server.ts",
+    "api:start": "tsx services/api/src/server.ts",
+    "api:typecheck": "tsc -p services/api/tsconfig.json",
+    "api:test": "tsx --test services/api/tests/*.test.ts",
+    "check": "pnpm lint && pnpm api:typecheck && pnpm api:test && pnpm test"
   },
   "dependencies": {
+    "@fastify/cors": "^11.3.0",
+    "@fastify/rate-limit": "^11.2.0",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "0.45.2",
+    "fastify": "^5.11.3",
+    "jose": "^6.2.8",
     "lucide-react": "^1.31.0",
+    "postgres": "^3.4.9",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "recharts": "^3.10.1"
+    "recharts": "^3.10.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
@@ -38,6 +52,7 @@
     "globals": "16.4.0",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
+    "tsx": "^4.23.11",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.3",
     "vinext": "1.0.0-beta.2",

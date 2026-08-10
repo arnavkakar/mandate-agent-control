@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext", "noEmit": true, "allowJs": false, "incremental": false },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}

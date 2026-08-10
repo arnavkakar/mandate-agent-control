@@ -16,8 +16,34 @@ The demo is seeded around a small company using procurement, growth, travel, and
 - **Authorization boundary:** a deterministic rules pipeline checks agent status, mandate validity, monthly budget, autonomous limit, approval threshold, merchant/category allow- and blocklists, geography, and merchant novelty.
 - **Risk boundary:** separate weighted signals cover amount anomaly, new merchant, category mismatch, abnormal velocity, and geography mismatch. Risk can escalate a transaction but cannot override a hard decline.
 - **LLM boundary:** production mandate parsing should call OpenAI Structured Outputs on the server, validate the response against a strict schema, and present the result for user confirmation. The demo renders a deterministic representative parse so it remains safe and usable without secrets.
-- **Data boundary:** the Drizzle schema in `db/schema.ts` defines users, agents, mandates, transactions, authorization decisions, approval requests, and hash-linked audit events. The schema is portable to Supabase PostgreSQL; JSON text columns become `jsonb`, and ownership is enforced with Supabase RLS in production.
+- **Production enforcement API:** `services/api` is a Railway-ready Fastify service with PostgreSQL, signup/login, organizations, scoped agent credentials, versioned mandates, idempotent authorization requests, serialized budget checks, approval records, and hash-chained audit events.
+- **Data boundary:** `services/api/src/schema.ts` is the production PostgreSQL model. The original `db/schema.ts` remains the lightweight hosted-demo schema. Tenant ownership is explicit on every financial record.
 - **Payment boundary:** a future provider adapter receives only already-authorized intents. No provider implementation exists in this MVP.
+
+```text
+Agent / MCP / your backend
+          │  signed REST request
+          ▼
+Mandate authorization API ──► deterministic policy + risk
+          │                              │
+          ▼                              ▼
+ PostgreSQL ledger                one explainable decision
+          │
+          └──► optional webhook / future payment-provider adapter
+```
+
+## Where production data comes from
+
+Mandate does not depend on a bank, card network, or third-party transaction feed. The primary data source is the authorization request that an agent, an MCP server, or the customer&apos;s backend sends **before** a purchase. Customers configure identity and intent in the dashboard; request history creates the merchant, velocity, and anomaly baselines.
+
+Optional connectors can enrich the system later:
+
+- MCP tools or agent SDKs submit authorization requests.
+- Webhooks notify customers of decisions and approval outcomes.
+- Expense/ERP imports provide reconciliation and richer historical baselines.
+- A future payment-provider adapter may execute an already-approved intent, but it stays downstream of Mandate and outside this MVP.
+
+This makes the core product plug-and-play and independently deployable. External sources improve context; they are not required for authorization.
 
 ## Decision precedence
 
@@ -36,17 +62,60 @@ Risk and policy outputs are stored independently. Human resolution creates a new
 5. Open **Agents** to pause/resume an agent or require approval for all future transactions.
 6. Open **Create Mandate**, interpret the example intent, review the structured policy, and activate it.
 
-## Production hardening roadmap
+## Implemented production foundation
 
-- Supabase Auth with organization membership and RLS on every owned table.
-- Supabase PostgreSQL migrations, transactions, and row locks for atomic monthly budget reservation.
+- Password signup/login with short-lived signed access tokens.
+- Organizations and tenant-scoped records.
+- Per-agent API keys stored as one-way SHA-256 hashes and returned once.
+- Deterministic policy and risk engines with unit tests.
+- Idempotent `POST /v1/authorization-requests` contract.
+- PostgreSQL advisory locks around spend evaluation and ledger writes, preventing concurrent requests from overspending a monthly budget.
+- Versioned mandates, immutable original decisions, and SHA-256-linked audit events.
+- CORS, rate limiting, strict request validation, Docker, and Railway configuration.
+
+## Remaining hardening roadmap
+
 - Server-only OpenAI Structured Outputs integration with schema versioning and adversarial prompt tests.
-- Signed agent credentials, nonce/idempotency enforcement, request expiry, and replay protection.
-- Cryptographically chained audit events exported to immutable object storage.
+- Email verification, password reset, MFA, SSO, session revocation, and audit-log export to immutable object storage.
+- Webhook signing, retry queues, dead-letter handling, and key rotation UX.
 - Configurable velocity windows, historical baselines, alerting, and risk calibration.
 - Optional payment-provider adapter behind an explicit simulation/production environment gate.
-- Background reconciliation, observability, rate limiting, and approval escalation policies.
+- Background reconciliation, OpenTelemetry/Sentry observability, backups, retention controls, and approval escalation policies.
+
+## Railway deployment
+
+1. Create a Railway project from this GitHub repository.
+2. Add a Railway PostgreSQL service and link it to the application so `DATABASE_URL` is injected.
+3. Set `JWT_SECRET` to at least 32 random characters and `CORS_ORIGIN` to the dashboard origin.
+4. Run `pnpm db:prod:migrate` once as a release/pre-deploy command.
+5. Deploy. `railway.json` builds `services/api/Dockerfile` and checks `/health`.
+
+Keep the public dashboard and API on separate domains, for example `app.mandate.example` and `api.mandate.example`. Only server-side components may hold OpenAI credentials. Agent keys belong in the calling agent&apos;s secret store, never browser storage.
+
+## API quick start
+
+After signup, create an agent, activate a mandate, then issue a scoped key. The agent calls:
+
+```bash
+curl https://api.example.com/v1/authorization-requests \
+  -H "X-Mandate-Key: mnd_live_REDACTED" \
+  -H "Content-Type: application/json" \
+  -d '{"idempotencyKey":"order_01J8","amount":96,"currency":"USD","merchant":"Notion","category":"Software","country":"US"}'
+```
+
+The caller must proceed only for `APPROVED`, wait for a human on `APPROVAL_REQUIRED`, and stop on `DECLINED`.
 
 ## Local development
 
-Use Node 22 or newer, install dependencies, then run the `dev`, `build`, `lint`, and `test` scripts from `package.json`.
+Use Node 22 or newer.
+
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:prod:migrate
+pnpm api:dev       # API on :3001
+pnpm dev           # dashboard
+pnpm check         # lint, typecheck, engine tests, UI build/test
+```
+
+The local API requires PostgreSQL. The hosted dashboard intentionally remains a seeded simulation and clearly labels that no money moves.
