@@ -95,7 +95,7 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
   const response = await fetch(`${MANDATE_API_URL}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init.headers,
     },
