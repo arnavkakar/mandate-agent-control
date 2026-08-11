@@ -314,6 +314,7 @@ export function AgentsLivePage({
                     name="budget"
                     type="number"
                     min="0"
+                    disabled={selected.status === "REVOKED"}
                     defaultValue={selected.mandate.monthlyBudgetCents / 100}
                   />
                 </label>
@@ -323,6 +324,7 @@ export function AgentsLivePage({
                     name="limit"
                     type="number"
                     min="0"
+                    disabled={selected.status === "REVOKED"}
                     defaultValue={selected.mandate.maxTransactionCents / 100}
                   />
                 </label>
@@ -332,6 +334,7 @@ export function AgentsLivePage({
                     name="threshold"
                     type="number"
                     min="0"
+                    disabled={selected.status === "REVOKED"}
                     defaultValue={selected.mandate.approvalThresholdCents / 100}
                   />
                 </label>
@@ -339,11 +342,15 @@ export function AgentsLivePage({
                   <input
                     name="approvalAll"
                     type="checkbox"
+                    disabled={selected.status === "REVOKED"}
                     defaultChecked={selected.mandate.requireApprovalForAll}
                   />{" "}
                   Require approval for every future request
                 </label>
-                <button className="primary">
+                <button
+                  className="primary"
+                  disabled={selected.status === "REVOKED"}
+                >
                   <Settings2 /> Activate new version
                 </button>
               </form>
@@ -504,7 +511,8 @@ export function MandateLivePage({
   setParsed: (value: boolean) => void;
   setView: (view: "Agents") => void;
 }) {
-  const [agentId, setAgentId] = useState(agents[0]?.id ?? ""),
+  const eligibleAgents = agents.filter((agent) => agent.status !== "REVOKED");
+  const [agentId, setAgentId] = useState(eligibleAgents[0]?.id ?? ""),
     [result, setResult] = useState<MandateInterpretation | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -597,7 +605,7 @@ export function MandateLivePage({
       .split(",")
       .map((x) => x.trim())
       .filter(Boolean);
-  if (!agents.length)
+  if (!eligibleAgents.length)
     return (
       <section className="empty card mandate-prerequisite">
         <Bot />
@@ -635,7 +643,7 @@ export function MandateLivePage({
               value={agentId}
               onChange={(e) => setAgentId(e.target.value)}
             >
-              {agents.map((a) => (
+              {eligibleAgents.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}
                 </option>
@@ -854,7 +862,7 @@ export function MandateLivePage({
               </div>
               <div>
                 <dt>Agent</dt>
-                <dd>{agents.find((a) => a.id === agentId)?.name}</dd>
+                <dd>{eligibleAgents.find((a) => a.id === agentId)?.name}</dd>
               </div>
             </dl>
             <div className="modal-actions">

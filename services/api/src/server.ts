@@ -429,23 +429,42 @@ app.patch("/v1/agents/:id", async (request, reply) => {
     })
     .refine((value) => Object.keys(value).length > 0)
     .parse(request.body);
-  const [agent] = await db
-    .update(agents)
-    .set(input)
-    .where(
-      and(eq(agents.id, id), eq(agents.organizationId, auth.organizationId)),
-    )
-    .returning();
-  if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
-  await appendAudit(db, {
-    organizationId: auth.organizationId,
-    eventType: "AGENT_UPDATED",
-    actorType: "USER",
-    actorId: auth.userId,
-    subjectType: "AGENT",
-    subjectId: agent.id,
-    payload: input,
+  const agent = await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(agents)
+      .set(input)
+      .where(
+        and(eq(agents.id, id), eq(agents.organizationId, auth.organizationId)),
+      )
+      .returning();
+    if (!updated) return null;
+    if (input.status === "REVOKED") {
+      await tx
+        .update(apiKeys)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(
+            eq(apiKeys.agentId, id),
+            eq(apiKeys.organizationId, auth.organizationId),
+            dsql`${apiKeys.revokedAt} is null`,
+          ),
+        );
+    }
+    await appendAudit(tx, {
+      organizationId: auth.organizationId,
+      eventType: "AGENT_UPDATED",
+      actorType: "USER",
+      actorId: auth.userId,
+      subjectType: "AGENT",
+      subjectId: updated.id,
+      payload: {
+        ...input,
+        credentialsRevoked: input.status === "REVOKED",
+      },
+    });
+    return updated;
   });
+  if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
   return agent;
 });
 app.post("/v1/agents/:id/keys", async (request, reply) => {
@@ -459,6 +478,8 @@ app.post("/v1/agents/:id/keys", async (request, reply) => {
     )
     .limit(1);
   if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
+  if (agent.status === "REVOKED")
+    return reply.code(409).send({ error: "AGENT_REVOKED" });
   const input = z
     .object({
       name: z.string().min(2),
@@ -568,6 +589,19 @@ app.post(
     const { agentId, keyId } = z
       .object({ agentId: z.string().uuid(), keyId: z.string().uuid() })
       .parse(request.params);
+    const [agent] = await db
+      .select({ status: agents.status })
+      .from(agents)
+      .where(
+        and(
+          eq(agents.id, agentId),
+          eq(agents.organizationId, auth.organizationId),
+        ),
+      )
+      .limit(1);
+    if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
+    if (agent.status === "REVOKED")
+      return reply.code(409).send({ error: "AGENT_REVOKED" });
     const issued = issueApiKey();
     const replacement = await db.transaction(async (tx) => {
       const [current] = await tx
@@ -588,7 +622,7 @@ app.post(
         .values({
           organizationId: auth.organizationId,
           agentId,
-          name: `${current.name} replacement`,
+          name: `${current.name.replace(/(?: replacement)+$/, "")} replacement`,
           scopes: current.scopes,
           prefix: issued.prefix,
           keyHash: issued.hash,
@@ -643,13 +677,15 @@ app.post("/v1/agents/:id/mandates", async (request, reply) => {
     .object({ userIntent: z.string().min(10), policy: mandatePolicySchema })
     .parse(request.body);
   const [agent] = await db
-    .select({ id: agents.id })
+    .select({ id: agents.id, status: agents.status })
     .from(agents)
     .where(
       and(eq(agents.id, id), eq(agents.organizationId, auth.organizationId)),
     )
     .limit(1);
   if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
+  if (agent.status === "REVOKED")
+    return reply.code(409).send({ error: "AGENT_REVOKED" });
   const mandate = await db.transaction(async (tx) => {
     await tx.execute(dsql`select pg_advisory_xact_lock(hashtext(${id}))`);
     const [current] = await tx
