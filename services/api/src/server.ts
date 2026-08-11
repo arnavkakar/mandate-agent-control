@@ -27,6 +27,15 @@ async function human(request: FastifyRequest) {
 }
 
 app.get("/health", async () => ({ ok: true, service: "mandate-api", version: "1.0.0" }));
+app.get("/", async () => ({
+  name: "Mandate Authorization API",
+  status: "operational",
+  version: "1.0.0",
+  documentation: "https://github.com/arnavkakar/mandate-agent-control#api-quick-start",
+  health: "/health",
+  authorizationEndpoint: "/v1/authorization-requests",
+  notice: "Simulated authorization and risk controls only. No payments are processed.",
+}));
 app.post("/v1/auth/signup", async (request, reply) => {
   const input = signupSchema.parse(request.body);
   const slug = `${input.organizationName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
