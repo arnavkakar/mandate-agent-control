@@ -8,6 +8,7 @@ const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().default("gpt-5-mini"),
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 });
 
 export const env = schema.parse(process.env);

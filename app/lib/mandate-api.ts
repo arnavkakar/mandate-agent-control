@@ -106,6 +106,8 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
 }
 
 export const mandateApi = {
+  googleConfig() { return request<{ enabled: boolean; clientId: string | null }>("/v1/auth/google/config"); },
+  googleAuth(credential: string) { return request<Session>("/v1/auth/google", { method: "POST", body: JSON.stringify({ credential }) }); },
   signup(input: { name: string; email: string; password: string; organizationName: string }) {
     return request<Session>("/v1/auth/signup", { method: "POST", body: JSON.stringify(input) });
   },

@@ -3,9 +3,10 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { and, desc, eq, sql as dsql } from "drizzle-orm";
 import { z } from "zod";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { db, sql } from "./db.js";
 import { env } from "./env.js";
-import { agents, apiKeys, approvalRequests, auditEvents, authorizationDecisions, budgetLedger, mandates, memberships, organizations, transactions, users } from "./schema.js";
+import { agents, apiKeys, approvalRequests, auditEvents, authAccounts, authorizationDecisions, budgetLedger, mandates, memberships, organizations, transactions, users } from "./schema.js";
 import { hashApiKey, hashPassword, issueApiKey, issueToken, verifyPassword, verifyToken } from "./security.js";
 import { evaluatePolicy } from "./policy.js";
 import { evaluateRisk } from "./risk.js";
@@ -19,7 +20,9 @@ await app.register(rateLimit, { max: 120, timeWindow: "1 minute" });
 
 const signupSchema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(12).regex(/[A-Z]/).regex(/[a-z]/).regex(/\d/), organizationName: z.string().min(2) });
 const loginSchema = z.object({ email: z.string().email(), password: z.string() });
+const googleSchema = z.object({ credential: z.string().min(100) });
 const authRequestSchema = z.object({ idempotencyKey: z.string().min(8).max(128), amount: z.number().positive().max(10_000_000), currency: z.string().length(3).default("USD"), merchant: z.string().min(1).max(160), category: z.string().min(1).max(80), country: z.string().length(2), metadata: z.record(z.string(), z.unknown()).default({}) });
+const googleKeys = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
 
 async function human(request: FastifyRequest) {
   const header = request.headers.authorization;
@@ -37,6 +40,61 @@ app.get("/", async () => ({
   authorizationEndpoint: "/v1/authorization-requests",
   notice: "Simulated authorization and risk controls only. No payments are processed.",
 }));
+app.get("/v1/auth/google/config", async () => ({ enabled: Boolean(env.GOOGLE_CLIENT_ID), clientId: env.GOOGLE_CLIENT_ID ?? null }));
+app.post("/v1/auth/google", async (request, reply) => {
+  if (!env.GOOGLE_CLIENT_ID) return reply.code(503).send({ error: "GOOGLE_AUTH_NOT_CONFIGURED" });
+  const origin = request.headers.origin;
+  const allowedOrigins = env.CORS_ORIGIN.split(",").map(value => value.trim());
+  if (origin && !allowedOrigins.includes(origin)) return reply.code(403).send({ error: "ORIGIN_NOT_ALLOWED" });
+  const { credential } = googleSchema.parse(request.body);
+  let payload;
+  try {
+    ({ payload } = await jwtVerify(credential, googleKeys, {
+      audience: env.GOOGLE_CLIENT_ID,
+      issuer: ["https://accounts.google.com", "accounts.google.com"],
+    }));
+  } catch {
+    return reply.code(401).send({ error: "INVALID_GOOGLE_CREDENTIAL" });
+  }
+  const subject = typeof payload.sub === "string" ? payload.sub : "";
+  const email = typeof payload.email === "string" ? payload.email.toLowerCase() : "";
+  const name = typeof payload.name === "string" ? payload.name.trim() : email.split("@")[0];
+  if (!subject || !email || payload.email_verified !== true) return reply.code(401).send({ error: "UNVERIFIED_GOOGLE_ACCOUNT" });
+
+  const result = await db.transaction(async tx => {
+    const [linked] = await tx.select({ user: users }).from(authAccounts).innerJoin(users, eq(users.id, authAccounts.userId)).where(and(eq(authAccounts.provider, "google"), eq(authAccounts.providerSubject, subject))).limit(1);
+    let user = linked?.user;
+    if (!user) {
+      const [existing] = await tx.select().from(users).where(eq(users.email, email)).limit(1);
+      if (existing) {
+        const googleControlsEmail = email.endsWith("@gmail.com") || typeof payload.hd === "string";
+        if (!googleControlsEmail) throw Object.assign(new Error("Account linking requires password confirmation"), { code: "ACCOUNT_LINKING_REQUIRED" });
+        user = existing;
+      } else {
+        [user] = await tx.insert(users).values({ email, name: name || "Mandate user", passwordHash: null }).returning();
+      }
+      await tx.insert(authAccounts).values({ userId: user.id, provider: "google", providerSubject: subject });
+    }
+    let [membership] = await tx.select().from(memberships).where(eq(memberships.userId, user.id)).limit(1);
+    let organization;
+    if (!membership) {
+      const organizationName = `${user.name}'s Workspace`;
+      const slug = `${user.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "workspace"}-${Date.now().toString(36)}`;
+      [organization] = await tx.insert(organizations).values({ name: organizationName, slug }).returning();
+      [membership] = await tx.insert(memberships).values({ organizationId: organization.id, userId: user.id, role: "owner" }).returning();
+      await appendAudit(tx, { organizationId: organization.id, eventType: "ORGANIZATION_CREATED", actorType: "USER", actorId: user.id, subjectType: "ORGANIZATION", subjectId: organization.id, payload: { name: organization.name, identityProvider: "google" } });
+    } else {
+      [organization] = await tx.select().from(organizations).where(eq(organizations.id, membership.organizationId)).limit(1);
+    }
+    if (!organization) throw new Error("Workspace not found");
+    return { user, organization };
+  }).catch(error => {
+    if (error && typeof error === "object" && "code" in error && error.code === "ACCOUNT_LINKING_REQUIRED") return null;
+    throw error;
+  });
+  if (!result) return reply.code(409).send({ error: "ACCOUNT_LINKING_REQUIRED" });
+  return { token: await issueToken(result.user.id, result.organization.id), user: { id: result.user.id, name: result.user.name, email: result.user.email }, organization: result.organization };
+});
 app.post("/v1/auth/signup", async (request, reply) => {
   const input = signupSchema.parse(request.body);
   const slug = `${input.organizationName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
@@ -52,7 +110,7 @@ app.post("/v1/auth/signup", async (request, reply) => {
 app.post("/v1/auth/login", async (request, reply) => {
   const input = loginSchema.parse(request.body);
   const [user] = await db.select().from(users).where(eq(users.email, input.email.toLowerCase())).limit(1);
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) return reply.code(401).send({ error: "INVALID_CREDENTIALS" });
+  if (!user || !user.passwordHash || !(await verifyPassword(input.password, user.passwordHash))) return reply.code(401).send({ error: "INVALID_CREDENTIALS" });
   const [membership] = await db.select().from(memberships).where(eq(memberships.userId, user.id)).limit(1);
   if (!membership) return reply.code(403).send({ error: "WORKSPACE_MEMBERSHIP_REQUIRED" });
   const [organization] = await db.select().from(organizations).where(eq(organizations.id, membership.organizationId)).limit(1);

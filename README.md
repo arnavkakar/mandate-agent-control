@@ -64,7 +64,7 @@ Risk and policy outputs are stored independently. Human resolution creates a new
 
 ## Implemented production foundation
 
-- Password signup/login with short-lived signed access tokens.
+- Password signup/login and Google Identity Services signup with server-verified ID tokens and short-lived Mandate access tokens.
 - Organizations and tenant-scoped records.
 - Per-agent API keys stored as one-way SHA-256 hashes and returned once.
 - Deterministic policy and risk engines with unit tests.
@@ -76,7 +76,7 @@ Risk and policy outputs are stored independently. Human resolution creates a new
 ## Remaining hardening roadmap
 
 - Server-only OpenAI Structured Outputs integration with schema versioning and adversarial prompt tests.
-- Email verification, password reset, MFA, SSO, session revocation, and audit-log export to immutable object storage.
+- Password email verification, password reset, MFA, enterprise SSO, session revocation, and audit-log export to immutable object storage.
 - Webhook signing, retry queues, dead-letter handling, and key rotation UX.
 - Configurable velocity windows, historical baselines, alerting, and risk calibration.
 - Optional payment-provider adapter behind an explicit simulation/production environment gate.
@@ -87,8 +87,9 @@ Risk and policy outputs are stored independently. Human resolution creates a new
 1. Create a Railway project from this GitHub repository.
 2. Add a Railway PostgreSQL service and link it to the application so `DATABASE_URL` is injected.
 3. Set `JWT_SECRET` to at least 32 random characters and `CORS_ORIGIN` to the dashboard origin.
-4. Run `pnpm db:prod:migrate` once as a release/pre-deploy command.
-5. Deploy. `railway.json` builds `services/api/Dockerfile` and checks `/health`.
+4. For Google signup, create a Google OAuth **Web application** client, add the frontend domain (for example `https://mandate-web-production.up.railway.app`) as an authorized JavaScript origin, and set its client ID as `GOOGLE_CLIENT_ID` on the API service. The Google button remains hidden when this variable is absent.
+5. Run `pnpm db:prod:migrate` once as a release/pre-deploy command.
+6. Deploy. `railway.json` builds `services/api/Dockerfile` and checks `/health`.
 
 Keep the public dashboard and API on separate domains, for example `app.mandate.example` and `api.mandate.example`. Only server-side components may hold OpenAI credentials. Agent keys belong in the calling agent&apos;s secret store, never browser storage.
 
