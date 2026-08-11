@@ -413,18 +413,30 @@ declare global {
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
+  const [authNotice, setAuthNotice] = useState("");
   useEffect(() => {
     setSession(loadSession());
     setSessionReady(true);
+  }, []);
+  useEffect(() => {
+    const expire = () => {
+      saveSession(null);
+      setSession(null);
+      setAuthNotice("Your session expired. Sign in again to continue.");
+    };
+    window.addEventListener("mandate:session-expired", expire);
+    return () => window.removeEventListener("mandate:session-expired", expire);
   }, []);
   if (!sessionReady)
     return <div className="auth-loading">Loading Mandate…</div>;
   if (!session)
     return (
       <AuthPage
+        notice={authNotice}
         onAuthenticated={(next) => {
           saveSession(next);
           setSession(next);
+          setAuthNotice("");
         }}
       />
     );
@@ -434,6 +446,7 @@ export default function Home() {
       onLogout={() => {
         saveSession(null);
         setSession(null);
+        setAuthNotice("");
       }}
     />
   );
@@ -441,8 +454,10 @@ export default function Home() {
 
 function AuthPage({
   onAuthenticated,
+  notice,
 }: {
   onAuthenticated: (session: Session) => void;
+  notice?: string;
 }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [busy, setBusy] = useState(false);
@@ -508,6 +523,11 @@ function AuthPage({
         <p>
           Manage deterministic authorization for every agent purchase request.
         </p>
+        {notice && (
+          <div className="auth-notice" role="status">
+            {notice}
+          </div>
+        )}
         <GoogleAuthButton
           mode={mode}
           onAuthenticated={onAuthenticated}

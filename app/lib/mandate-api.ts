@@ -101,7 +101,12 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
     },
   });
   const body = await response.json().catch(() => ({})) as Record<string, unknown>;
-  if (!response.ok) throw new MandateApiError(response.status, String(body.error ?? "REQUEST_FAILED"), body);
+  if (!response.ok) {
+    if (response.status === 401 && token && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("mandate:session-expired"));
+    }
+    throw new MandateApiError(response.status, String(body.error ?? "REQUEST_FAILED"), body);
+  }
   return body as T;
 }
 

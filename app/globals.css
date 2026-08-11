@@ -1945,6 +1945,16 @@ textarea:focus-visible {
   display: flex;
   justify-content: space-between;
 }
+.auth-notice {
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--purple);
+  padding: 10px 12px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.45;
+}
 .profile {
   width: 100%;
   background: transparent;

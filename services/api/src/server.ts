@@ -73,7 +73,14 @@ async function human(request: FastifyRequest) {
   const header = request.headers.authorization;
   if (!header?.startsWith("Bearer "))
     throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
-  return verifyToken(header.slice(7));
+  try {
+    return await verifyToken(header.slice(7));
+  } catch {
+    throw Object.assign(new Error("Session expired or invalid"), {
+      statusCode: 401,
+      code: "SESSION_EXPIRED",
+    });
+  }
 }
 
 app.get("/health", async () => ({
