@@ -86,6 +86,8 @@ type Tx = {
   agent: string;
   time: string;
   decision: Decision;
+  policyDecision?: Decision;
+  approvalStatus?: ApiTransaction["approvalStatus"];
   risk: number;
   country: string;
   isNew: boolean;
@@ -685,6 +687,9 @@ function Workspace({
     document.addEventListener("keydown", keydown);
     return () => document.removeEventListener("keydown", keydown);
   }, [mobileOpen]);
+  useEffect(() => {
+    setLoadError("");
+  }, [view]);
   const [mandateText, setMandateText] = useState(
     "Give my procurement agent $2,000 per month. It can purchase software and office equipment. Maximum autonomous transaction is $250. Require approval for any new merchant. Block crypto, gambling, and international transactions.",
   );
@@ -718,7 +723,9 @@ function Workspace({
   }, [session.token]);
 
   const pending = transactions.filter(
-    (t) => t.decision === "APPROVAL_REQUIRED",
+    (t) =>
+      t.policyDecision === "APPROVAL_REQUIRED" &&
+      t.approvalStatus === "PENDING",
   );
   const title = view === "Approvals" ? "Approval Queue" : view;
 
@@ -776,10 +783,16 @@ function Workspace({
         note,
       );
       await refresh();
-    } catch {
-      setLoadError(
-        "The approval could not be resolved. It may no longer be pending.",
-      );
+    } catch (cause) {
+      if (
+        cause instanceof MandateApiError &&
+        cause.code === "APPROVAL_NOT_PENDING"
+      ) {
+        await refresh();
+        return;
+      }
+      setLoadError("The approval service did not respond. Try again.");
+      throw cause;
     }
   }
 
@@ -844,7 +857,7 @@ function Workspace({
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <button className="help-card">
+          <div className="help-card" role="status">
             <div className="help-icon">
               <Shield size={16} />
             </div>
@@ -853,8 +866,12 @@ function Workspace({
               <small>All systems operational</small>
             </div>
             <span className="live-dot" />
-          </button>
-          <button className="profile" onClick={onLogout}>
+          </div>
+          <button
+            className="profile"
+            aria-label={`Sign out ${session.user?.name || "workspace owner"}`}
+            onClick={onLogout}
+          >
             <div className="avatar">
               {session.user?.name
                 ?.split(" ")
@@ -867,7 +884,6 @@ function Workspace({
               <b>{session.user?.name || "Workspace owner"}</b>
               <small>Sign out</small>
             </div>
-            <MoreHorizontal size={18} />
           </button>
         </div>
       </aside>
@@ -889,20 +905,14 @@ function Workspace({
               <span />
               Simulation mode
             </div>
-            <button
-              className="icon-button"
-              disabled
-              title="Global search is planned"
-              aria-label="Global search (planned)"
-            >
-              <Search size={18} />
-            </button>
-            <button
-              className="primary"
-              onClick={() => setView("Create Mandate")}
-            >
-              <Plus size={17} /> New mandate
-            </button>
+            {view !== "Create Mandate" && (
+              <button
+                className="primary"
+                onClick={() => setView("Create Mandate")}
+              >
+                <Plus size={17} /> New mandate
+              </button>
+            )}
           </div>
         </header>
         <div className="content">
@@ -1007,6 +1017,12 @@ function Workspace({
 }
 
 function mapApiTransaction(row: ApiTransaction): Tx {
+  const resolvedDecision =
+    row.approvalStatus === "APPROVED"
+      ? "APPROVED"
+      : row.approvalStatus === "DECLINED"
+        ? "DECLINED"
+        : row.decision;
   return {
     id: row.id,
     merchant: row.merchant,
@@ -1014,7 +1030,9 @@ function mapApiTransaction(row: ApiTransaction): Tx {
     amount: row.amountCents / 100,
     agent: row.agentName,
     time: new Date(row.createdAt).toLocaleString(),
-    decision: row.decision,
+    decision: resolvedDecision,
+    policyDecision: row.decision,
+    approvalStatus: row.approvalStatus,
     risk: row.riskScore,
     country: row.country,
     isNew: row.riskFactors.some((f) => f.code === "NEW_MERCHANT"),
@@ -1275,12 +1293,15 @@ function Overview({
             </button>
           </div>
           {transactions.some(
-            (tx) => tx.decision === "APPROVAL_REQUIRED" && tx.approvalRequestId,
+            (tx) =>
+              tx.policyDecision === "APPROVAL_REQUIRED" &&
+              tx.approvalStatus === "PENDING",
           ) ? (
             transactions
               .filter(
                 (tx) =>
-                  tx.decision === "APPROVAL_REQUIRED" && tx.approvalRequestId,
+                  tx.policyDecision === "APPROVAL_REQUIRED" &&
+                  tx.approvalStatus === "PENDING",
               )
               .slice(0, 2)
               .map((tx) => (
@@ -1932,7 +1953,8 @@ function AuditPage({ transactions }: { transactions: Tx[] }) {
 }
 
 function ConnectionsPage() {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"key" | "snippet" | null>(null);
+  const [copyError, setCopyError] = useState(false);
   const endpoint = `${MANDATE_API_URL}/v1/authorization-requests`;
   const snippet = [
     `curl ${endpoint} \\`,
@@ -1940,6 +1962,15 @@ function ConnectionsPage() {
     `  -H "Content-Type: application/json" \\`,
     `  -d '{"idempotencyKey":"order_01J8","amount":96,"currency":"USD","merchant":"Notion","category":"Software","country":"US"}'`,
   ].join("\n");
+  async function copy(value: string, target: "key" | "snippet") {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(target);
+      setCopyError(false);
+    } catch {
+      setCopyError(true);
+    }
+  }
   return (
     <>
       <div className="page-intro">
@@ -1980,13 +2011,15 @@ function ConnectionsPage() {
             <code>mnd_test_••••••••••••2F8A</code>
             <button
               aria-label="Copy example key"
-              onClick={() => setCopied(true)}
+              onClick={() =>
+                void copy("mnd_test_example_not_a_real_secret", "key")
+              }
             >
               <Copy size={15} />
             </button>
           </div>
           <small>
-            {copied
+            {copied === "key"
               ? "Example copied"
               : "Real secrets are shown once and stored only as SHA-256 hashes."}
           </small>
@@ -2029,9 +2062,9 @@ function ConnectionsPage() {
             </div>
             <button
               className="secondary"
-              onClick={() => navigator.clipboard?.writeText(snippet)}
+              onClick={() => void copy(snippet, "snippet")}
             >
-              <Copy size={14} /> Copy
+              <Copy size={14} /> {copied === "snippet" ? "Copied" : "Copy"}
             </button>
           </div>
           <pre>{snippet}</pre>
@@ -2071,6 +2104,11 @@ function ConnectionsPage() {
           </div>
         </section>
       </div>
+      {copyError && (
+        <div className="auth-error" role="alert">
+          Clipboard access was blocked. Select and copy the example manually.
+        </div>
+      )}
       <aside className="extension-note">
         <b>Optional adapters are not installed.</b>
         <span>
@@ -2397,6 +2435,9 @@ function DecisionDrawer({ tx, close }: { tx: Tx; close: () => void }) {
     };
   }, [close]);
   const rules = tx.policyRules ?? [];
+  const humanResolved =
+    tx.policyDecision === "APPROVAL_REQUIRED" &&
+    (tx.approvalStatus === "APPROVED" || tx.approvalStatus === "DECLINED");
   return (
     <>
       <div className="drawer-backdrop" aria-hidden="true" onClick={close} />
@@ -2410,9 +2451,14 @@ function DecisionDrawer({ tx, close }: { tx: Tx; close: () => void }) {
         <div className="drawer-head">
           <div>
             <h2 id="decision-title">
-              Why Mandate returned {tx.decision.replace("_", " ")}
+              Why was this request {tx.decision.replace("_", " ").toLowerCase()}
+              ?
             </h2>
-            <p>Original evaluation evidence for this simulated request</p>
+            <p>
+              {humanResolved
+                ? `Policy required review; a human resolved it as ${tx.approvalStatus}.`
+                : "Original evaluation evidence for this simulated request"}
+            </p>
           </div>
           <button
             ref={closeButton}

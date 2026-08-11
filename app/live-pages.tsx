@@ -82,6 +82,7 @@ export function AgentsLivePage({
         name: String(f.get("name")),
         purpose: String(f.get("purpose")),
       });
+      setError("");
       setCreating(false);
       await refresh();
       setSelectedId(agent.id);
@@ -136,12 +137,20 @@ export function AgentsLivePage({
   }
   async function createKey() {
     if (!selected) return;
-    const issued = await mandateApi.createKey(session.token, selected.id, {
-      name: `${selected.name} key`,
-      scopes: ["authorizations:write"],
-    });
-    setSecret(issued.apiKey);
-    setKeys(await mandateApi.keys(session.token, selected.id));
+    setActing(true);
+    setError("");
+    try {
+      const issued = await mandateApi.createKey(session.token, selected.id, {
+        name: `${selected.name} key`,
+        scopes: ["authorizations:write"],
+      });
+      setSecret(issued.apiKey);
+      setKeys(await mandateApi.keys(session.token, selected.id));
+    } catch {
+      setError("The scoped credential could not be created. Try again.");
+    } finally {
+      setActing(false);
+    }
   }
   async function revoke(key: ApiKeyRecord) {
     if (!selected) return;
@@ -176,6 +185,7 @@ export function AgentsLivePage({
     setActing(true);
     try {
       await confirmation.action();
+      setError("");
       setConfirmation(null);
     } catch {
       setError("The requested control change could not be completed.");
@@ -243,7 +253,10 @@ export function AgentsLivePage({
             {agents.map((a) => (
               <button
                 className={a.id === selected.id ? "active" : ""}
-                onClick={() => setSelectedId(a.id)}
+                onClick={() => {
+                  setSelectedId(a.id);
+                  setError("");
+                }}
                 key={a.id}
               >
                 <span className={`status-dot ${a.status.toLowerCase()}`} />
@@ -355,10 +368,12 @@ export function AgentsLivePage({
                 </div>
                 <button
                   className="secondary"
-                  disabled={!selected.mandate || selected.status === "REVOKED"}
+                  disabled={
+                    acting || !selected.mandate || selected.status === "REVOKED"
+                  }
                   onClick={() => void createKey()}
                 >
-                  <KeyRound /> Create scoped key
+                  <KeyRound /> {acting ? "Creating…" : "Create scoped key"}
                 </button>
               </div>
               {secret && (
@@ -493,12 +508,28 @@ export function MandateLivePage({
     try {
       setResult(await mandateApi.interpretMandate(session.token, text));
     } catch (e) {
-      setError(
-        e instanceof MandateApiError &&
-          e.code === "MANDATE_INTERPRETER_NOT_CONFIGURED"
-          ? "OpenAI interpretation is not configured on the API service. Add OPENAI_API_KEY in Railway."
-          : "Mandate interpretation failed. Your instructions were preserved; try again.",
-      );
+      if (e instanceof MandateApiError) {
+        if (e.code === "MANDATE_INTERPRETER_NOT_CONFIGURED")
+          setError(
+            "Language-model interpretation is not configured on the API service.",
+          );
+        else if (e.code === "OPENAI_BILLING_REQUIRED")
+          setError(
+            "The OpenAI API account has no remaining credits. Add API billing or credits, then try again.",
+          );
+        else if (e.code === "OPENAI_RATE_LIMITED")
+          setError(
+            "OpenAI is rate-limiting requests. Wait a moment and retry.",
+          );
+        else
+          setError(
+            "Mandate interpretation failed. Your instructions were preserved; try again.",
+          );
+      } else {
+        setError(
+          "Mandate interpretation failed. Your instructions were preserved; try again.",
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -509,16 +540,46 @@ export function MandateLivePage({
   ) {
     setResult((r) => (r ? { ...r, policy: { ...r.policy, [key]: value } } : r));
   }
+  function startManualPolicy() {
+    setResult({
+      summary: "Conservative manual policy template",
+      assumptions: [
+        "Approval is required for every request until you explicitly loosen the rules.",
+      ],
+      ambiguities: [
+        "No language-model interpretation was applied. Review and complete every field.",
+      ],
+      policy: {
+        monthlyBudgetCents: 0,
+        maxTransactionCents: 0,
+        approvalThresholdCents: 0,
+        allowedCategories: [],
+        blockedCategories: ["crypto", "gambling"],
+        allowedMerchants: [],
+        blockedMerchants: [],
+        allowedCountries: ["US"],
+        requireApprovalForNewMerchant: true,
+        requireApprovalForAll: true,
+        expiresAt: null,
+      },
+    });
+    setError("");
+  }
   async function activate() {
     if (!result || !agentId) return;
     setBusy(true);
     try {
+      setError("");
       await mandateApi.createMandate(session.token, agentId, {
         userIntent: text,
         policy: result.policy,
       });
       await refresh();
       setView("Agents");
+    } catch {
+      setError(
+        "The mandate could not be activated. Your proposed rules were preserved; try again.",
+      );
     } finally {
       setBusy(false);
       setReviewingActivation(false);
@@ -584,7 +645,14 @@ export function MandateLivePage({
             />
             <small>{text.length}/5000 characters</small>
           </label>
-          {error && <div className="auth-error">{error}</div>}
+          {error && (
+            <div className="auth-error" role="alert">
+              <span>{error}</span>
+              <button className="text-button" onClick={startManualPolicy}>
+                Continue with manual rules
+              </button>
+            </div>
+          )}
           <button
             className="primary full"
             disabled={busy || !agentId || text.trim().length < 10}
