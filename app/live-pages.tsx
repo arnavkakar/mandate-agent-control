@@ -173,11 +173,11 @@ export function AgentsLivePage({
       title: `Rotate ${key.name}?`,
       body: "A replacement will be created and shown once. The current credential will be revoked immediately.",
       action: async () => {
-        const issued = await mandateApi.createKey(session.token, selected.id, {
-          name: `${key.name} replacement`,
-          scopes: key.scopes,
-        });
-        await mandateApi.revokeKey(session.token, selected.id, key.id);
+        const issued = await mandateApi.rotateKey(
+          session.token,
+          selected.id,
+          key.id,
+        );
         setSecret(issued.apiKey);
         setSecretCopied(false);
         setKeys(await mandateApi.keys(session.token, selected.id));

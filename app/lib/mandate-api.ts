@@ -131,6 +131,7 @@ export const mandateApi = {
   keys(token:string,agentId:string){return request<ApiKeyRecord[]>(`/v1/agents/${agentId}/keys`,{},token)},
   createKey(token: string, agentId: string, input:{name:string;scopes:string[]} = { name: "Primary key", scopes: ["authorizations:write"] }) { return request<{ id: string; apiKey: string; prefix: string; warning: string }>(`/v1/agents/${agentId}/keys`, { method: "POST", body: JSON.stringify(input) }, token); },
   revokeKey(token:string,agentId:string,keyId:string){return request(`/v1/agents/${agentId}/keys/${keyId}`,{method:"DELETE"},token)},
+  rotateKey(token:string,agentId:string,keyId:string){return request<{id:string;apiKey:string;prefix:string;warning:string}>(`/v1/agents/${agentId}/keys/${keyId}/rotate`,{method:"POST",body:"{}"},token)},
   mandates(token:string,agentId:string){return request<MandateRecord[]>(`/v1/agents/${agentId}/mandates`,{},token)},
   interpretMandate(token:string,userIntent:string){return request<MandateInterpretation>("/v1/mandate-interpretations",{method:"POST",body:JSON.stringify({userIntent})},token)},
   createMandate(token: string, agentId: string, input: { userIntent: string; policy: MandatePolicy }) { return request<MandateRecord>(`/v1/agents/${agentId}/mandates`, { method: "POST", body: JSON.stringify(input) }, token); },

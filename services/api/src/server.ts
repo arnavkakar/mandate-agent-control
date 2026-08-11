@@ -561,6 +561,59 @@ app.delete("/v1/agents/:agentId/keys/:keyId", async (request, reply) => {
   });
   return key;
 });
+app.post(
+  "/v1/agents/:agentId/keys/:keyId/rotate",
+  async (request, reply) => {
+    const auth = await human(request);
+    const { agentId, keyId } = z
+      .object({ agentId: z.string().uuid(), keyId: z.string().uuid() })
+      .parse(request.params);
+    const issued = issueApiKey();
+    const replacement = await db.transaction(async (tx) => {
+      const [current] = await tx
+        .update(apiKeys)
+        .set({ revokedAt: new Date() })
+        .where(
+          and(
+            eq(apiKeys.id, keyId),
+            eq(apiKeys.agentId, agentId),
+            eq(apiKeys.organizationId, auth.organizationId),
+            dsql`${apiKeys.revokedAt} is null`,
+          ),
+        )
+        .returning({ name: apiKeys.name, scopes: apiKeys.scopes });
+      if (!current) return null;
+      const [next] = await tx
+        .insert(apiKeys)
+        .values({
+          organizationId: auth.organizationId,
+          agentId,
+          name: `${current.name} replacement`,
+          scopes: current.scopes,
+          prefix: issued.prefix,
+          keyHash: issued.hash,
+        })
+        .returning({ id: apiKeys.id, prefix: apiKeys.prefix });
+      await appendAudit(tx, {
+        organizationId: auth.organizationId,
+        eventType: "API_KEY_ROTATED",
+        actorType: "USER",
+        actorId: auth.userId,
+        subjectType: "API_KEY",
+        subjectId: next.id,
+        payload: { agentId, revokedKeyId: keyId, prefix: next.prefix },
+      });
+      return next;
+    });
+    if (!replacement)
+      return reply.code(404).send({ error: "API_KEY_NOT_FOUND" });
+    return reply.code(201).send({
+      ...replacement,
+      apiKey: issued.key,
+      warning: "Copy this key now. It will not be shown again.",
+    });
+  },
+);
 app.get("/v1/mandates", async (request) => {
   const auth = await human(request);
   return db
