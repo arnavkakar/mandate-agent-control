@@ -69,6 +69,7 @@ export type MandateRecord={id:string;agentId:string;version:number;userIntent:st
 export type MandateInterpretation={policy:MandatePolicy;summary:string;assumptions:string[];ambiguities:string[]};
 export type AuditEvent={id:string;sequence:number;eventType:string;actorType:string;actorId:string;subjectType:string;subjectId:string;payload:Record<string,unknown>;previousHash:string|null;eventHash:string;createdAt:string};
 export type AuditVerification={valid:boolean;checked:number;headHash?:string|null;verifiedAt?:string;brokenAtSequence?:number};
+export type AuthorizationResponse={transaction:{id:string;amountCents:number;merchant:string;category:string;country:string;createdAt:string};decision:{decision:"APPROVED"|"APPROVAL_REQUIRED"|"DECLINED";reasons:string[];policyRules:ApiTransaction["policyRules"];riskScore:number;riskFactors:ApiTransaction["riskFactors"]};replayed:boolean};
 
 const SESSION_KEY = "mandate.session.v1";
 
@@ -127,4 +128,6 @@ export const mandateApi = {
   interpretMandate(token:string,userIntent:string){return request<MandateInterpretation>("/v1/mandate-interpretations",{method:"POST",body:JSON.stringify({userIntent})},token)},
   createMandate(token: string, agentId: string, input: { userIntent: string; policy: MandatePolicy }) { return request<MandateRecord>(`/v1/agents/${agentId}/mandates`, { method: "POST", body: JSON.stringify(input) }, token); },
   resolveApproval(token: string, id: string, outcome: "APPROVED" | "DECLINED", note?: string) { return request(`/v1/approval-requests/${id}/resolve`, { method: "POST", body: JSON.stringify({ outcome, note }) }, token); },
+  simulate(token:string,agentId:string,input:{amount:number;merchant:string;category:string;country:string}){return request<AuthorizationResponse>("/v1/simulator/authorization-requests",{method:"POST",body:JSON.stringify({agentId,request:{...input,currency:"USD",idempotencyKey:`sim-${crypto.randomUUID()}`,metadata:{source:"dashboard-simulator"}}})},token)},
+  seedDemo(token:string){return request<{agents:number;transactions:number;synthetic:true}>("/v1/demo-seed",{method:"POST",body:"{}"},token)},
 };
