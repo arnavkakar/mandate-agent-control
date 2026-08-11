@@ -2366,11 +2366,29 @@ function MandatePage({
 
 function DecisionDrawer({ tx, close }: { tx: Tx; close: () => void }) {
   const closeButton = useRef<HTMLButtonElement>(null);
+  const drawer = useRef<HTMLElement>(null);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     closeButton.current?.focus();
     const keydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") close();
+      if (event.key === "Tab" && drawer.current) {
+        const controls = Array.from(
+          drawer.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ),
+        );
+        if (!controls.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener("keydown", keydown);
     return () => {
@@ -2383,6 +2401,7 @@ function DecisionDrawer({ tx, close }: { tx: Tx; close: () => void }) {
     <>
       <div className="drawer-backdrop" aria-hidden="true" onClick={close} />
       <aside
+        ref={drawer}
         className="drawer"
         role="dialog"
         aria-modal="true"

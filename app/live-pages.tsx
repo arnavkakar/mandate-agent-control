@@ -13,7 +13,6 @@ import {
   Shield,
   ShieldAlert,
   SlidersHorizontal,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -595,8 +594,8 @@ export function MandateLivePage({
             {busy ? "Structuring policy…" : "Structure policy"}
           </button>
           <div className="ai-boundary-note">
-            <Sparkles /> OpenAI interprets these instructions; deterministic
-            code remains authoritative.
+            A language model proposes structure; deterministic code remains
+            authoritative.
           </div>
         </section>
         <section className="card policy-preview">
