@@ -9,14 +9,15 @@ import { agents, apiKeys, approvalRequests, auditEvents, authorizationDecisions,
 import { hashApiKey, hashPassword, issueApiKey, issueToken, verifyPassword, verifyToken } from "./security.js";
 import { evaluatePolicy } from "./policy.js";
 import { evaluateRisk } from "./risk.js";
-import { appendAudit } from "./audit.js";
+import { appendAudit, verifyAuditChain } from "./audit.js";
+import { interpretMandate, mandatePolicySchema } from "./mandate-interpreter.js";
 import type { MandatePolicy } from "./domain.js";
 
 const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 64_000 });
 await app.register(cors, { origin: env.CORS_ORIGIN.split(","), credentials: true });
 await app.register(rateLimit, { max: 120, timeWindow: "1 minute" });
 
-const signupSchema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(12), organizationName: z.string().min(2) });
+const signupSchema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(12).regex(/[A-Z]/).regex(/[a-z]/).regex(/\d/), organizationName: z.string().min(2) });
 const loginSchema = z.object({ email: z.string().email(), password: z.string() });
 const authRequestSchema = z.object({ idempotencyKey: z.string().min(8).max(128), amount: z.number().positive().max(10_000_000), currency: z.string().length(3).default("USD"), merchant: z.string().min(1).max(160), category: z.string().min(1).max(80), country: z.string().length(2), metadata: z.record(z.string(), z.unknown()).default({}) });
 
@@ -65,6 +66,7 @@ app.get("/v1/me", async request => {
   if (!user || !organization) throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
   return { user, organization };
 });
+app.post("/v1/mandate-interpretations",async(request,reply)=>{const auth=await human(request);const {userIntent}=z.object({userIntent:z.string().min(10).max(5000)}).parse(request.body);const interpretation=await interpretMandate(userIntent);await appendAudit(db,{organizationId:auth.organizationId,eventType:"MANDATE_INTERPRETED",actorType:"USER",actorId:auth.userId,subjectType:"MANDATE_DRAFT",subjectId:crypto.randomUUID(),payload:{summary:interpretation.summary,ambiguityCount:interpretation.ambiguities.length}});return reply.send(interpretation)});
 app.get("/v1/agents", async request => {
   const auth = await human(request); const period = new Date().toISOString().slice(0, 7);
   return db.select({
@@ -94,6 +96,7 @@ app.post("/v1/agents/:id/keys", async (request, reply) => {
   if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
   const input = z.object({ name: z.string().min(2), scopes: z.array(z.enum(["authorizations:write", "decisions:read"])).min(1) }).parse(request.body); const issued = issueApiKey();
   const [record] = await db.insert(apiKeys).values({ organizationId: auth.organizationId, agentId: agent.id, name: input.name, scopes: input.scopes, prefix: issued.prefix, keyHash: issued.hash }).returning();
+  await appendAudit(db,{organizationId:auth.organizationId,eventType:"API_KEY_CREATED",actorType:"USER",actorId:auth.userId,subjectType:"API_KEY",subjectId:record.id,payload:{agentId:id,name:record.name,prefix:record.prefix,scopes:record.scopes}});
   return reply.code(201).send({ id: record.id, apiKey: issued.key, prefix: issued.prefix, warning: "Copy this key now. It will not be shown again." });
 });
 app.get("/v1/agents/:id/keys", async (request, reply) => {
@@ -106,13 +109,14 @@ app.delete("/v1/agents/:agentId/keys/:keyId", async (request, reply) => {
   const auth = await human(request); const { agentId, keyId } = z.object({ agentId: z.string().uuid(), keyId: z.string().uuid() }).parse(request.params);
   const [key] = await db.update(apiKeys).set({ revokedAt: new Date() }).where(and(eq(apiKeys.id, keyId), eq(apiKeys.agentId, agentId), eq(apiKeys.organizationId, auth.organizationId), dsql`${apiKeys.revokedAt} is null`)).returning({ id: apiKeys.id, revokedAt: apiKeys.revokedAt });
   if (!key) return reply.code(404).send({ error: "API_KEY_NOT_FOUND" });
+  await appendAudit(db,{organizationId:auth.organizationId,eventType:"API_KEY_REVOKED",actorType:"USER",actorId:auth.userId,subjectType:"API_KEY",subjectId:key.id,payload:{agentId}});
   return key;
 });
 app.get("/v1/mandates", async request => { const auth = await human(request); return db.select().from(mandates).where(eq(mandates.organizationId, auth.organizationId)).orderBy(desc(mandates.createdAt)); });
 app.get("/v1/agents/:id/mandates", async request => { const auth = await human(request); const { id } = z.object({ id: z.string().uuid() }).parse(request.params); return db.select().from(mandates).where(and(eq(mandates.organizationId, auth.organizationId), eq(mandates.agentId, id))).orderBy(desc(mandates.version)); });
 app.post("/v1/agents/:id/mandates", async (request, reply) => {
   const auth = await human(request); const { id } = z.object({ id: z.string().uuid() }).parse(request.params);
-  const input = z.object({ userIntent: z.string().min(10), policy: z.custom<MandatePolicy>() }).parse(request.body);
+  const input = z.object({ userIntent: z.string().min(10), policy: mandatePolicySchema }).parse(request.body);
   const [agent] = await db.select({ id: agents.id }).from(agents).where(and(eq(agents.id, id), eq(agents.organizationId, auth.organizationId))).limit(1);
   if (!agent) return reply.code(404).send({ error: "AGENT_NOT_FOUND" });
   const mandate = await db.transaction(async tx => {
@@ -186,6 +190,7 @@ app.get("/v1/dashboard", async request => {
   return { period, authorizedSpendCents: Number(budget.authorizedSpendCents), authorizedBudgetCents, remainingBudgetCents: Math.max(0, authorizedBudgetCents - Number(budget.authorizedSpendCents)), ...Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, Number(value)])) };
 });
 app.get("/v1/audit-events", async request => { const auth = await human(request); return db.select().from(auditEvents).where(eq(auditEvents.organizationId, auth.organizationId)).orderBy(desc(auditEvents.sequence)).limit(250); });
+app.get("/v1/audit-events/verify",async request=>{const auth=await human(request);return verifyAuditChain(db,auth.organizationId)});
 app.post("/v1/approval-requests/:id/resolve", async (request, reply) => {
   const auth = await human(request); const { id } = z.object({ id: z.string().uuid() }).parse(request.params); const input = z.object({ outcome: z.enum(["APPROVED", "DECLINED"]), note: z.string().max(500).optional() }).parse(request.body);
   const result = await db.transaction(async tx => {
@@ -208,7 +213,7 @@ app.post("/v1/approval-requests/:id/resolve", async (request, reply) => {
   return result;
 });
 
-app.setErrorHandler((error: unknown, _request, reply) => { if (error instanceof z.ZodError) return reply.code(400).send({ error: "INVALID_REQUEST", issues: error.issues }); app.log.error(error); const failure = error as { statusCode?: number; name?: string }; return reply.code(failure.statusCode ?? 500).send({ error: failure.statusCode ? failure.name : "INTERNAL_ERROR" }); });
+app.setErrorHandler((error: unknown, _request, reply) => { if (error instanceof z.ZodError) return reply.code(400).send({ error: "INVALID_REQUEST", issues: error.issues }); app.log.error(error); const failure = error as { statusCode?: number; code?: string; name?: string }; return reply.code(failure.statusCode ?? 500).send({ error: failure.code??(failure.statusCode ? failure.name : "INTERNAL_ERROR") }); });
 
 await app.listen({ port: env.PORT, host: "0.0.0.0" });
 process.on("SIGTERM", async () => { await app.close(); await sql.end(); });

@@ -64,6 +64,11 @@ export type DashboardSummary = {
   review: number;
   highRisk: number;
 };
+export type ApiKeyRecord={id:string;name:string;prefix:string;scopes:string[];lastUsedAt:string|null;revokedAt:string|null;createdAt:string};
+export type MandateRecord={id:string;agentId:string;version:number;userIntent:string;policy:MandatePolicy;active:boolean;createdAt:string};
+export type MandateInterpretation={policy:MandatePolicy;summary:string;assumptions:string[];ambiguities:string[]};
+export type AuditEvent={id:string;sequence:number;eventType:string;actorType:string;actorId:string;subjectType:string;subjectId:string;payload:Record<string,unknown>;previousHash:string|null;eventHash:string;createdAt:string};
+export type AuditVerification={valid:boolean;checked:number;headHash?:string|null;verifiedAt?:string;brokenAtSequence?:number};
 
 const SESSION_KEY = "mandate.session.v1";
 
@@ -113,8 +118,13 @@ export const mandateApi = {
   transactions(token: string) { return request<ApiTransaction[]>("/v1/transactions", {}, token); },
   approvals(token: string) { return request<(ApiTransaction & { status: string; expiresAt: string })[]>("/v1/approval-requests", {}, token); },
   dashboard(token: string) { return request<DashboardSummary>("/v1/dashboard", {}, token); },
-  auditEvents(token: string) { return request<Record<string, unknown>[]>("/v1/audit-events", {}, token); },
-  createKey(token: string, agentId: string, input = { name: "Primary key", scopes: ["authorizations:write"] }) { return request<{ id: string; apiKey: string; prefix: string; warning: string }>(`/v1/agents/${agentId}/keys`, { method: "POST", body: JSON.stringify(input) }, token); },
-  createMandate(token: string, agentId: string, input: { userIntent: string; policy: MandatePolicy }) { return request(`/v1/agents/${agentId}/mandates`, { method: "POST", body: JSON.stringify(input) }, token); },
+  auditEvents(token: string) { return request<AuditEvent[]>("/v1/audit-events", {}, token); },
+  verifyAudit(token:string){return request<AuditVerification>("/v1/audit-events/verify",{},token)},
+  keys(token:string,agentId:string){return request<ApiKeyRecord[]>(`/v1/agents/${agentId}/keys`,{},token)},
+  createKey(token: string, agentId: string, input:{name:string;scopes:string[]} = { name: "Primary key", scopes: ["authorizations:write"] }) { return request<{ id: string; apiKey: string; prefix: string; warning: string }>(`/v1/agents/${agentId}/keys`, { method: "POST", body: JSON.stringify(input) }, token); },
+  revokeKey(token:string,agentId:string,keyId:string){return request(`/v1/agents/${agentId}/keys/${keyId}`,{method:"DELETE"},token)},
+  mandates(token:string,agentId:string){return request<MandateRecord[]>(`/v1/agents/${agentId}/mandates`,{},token)},
+  interpretMandate(token:string,userIntent:string){return request<MandateInterpretation>("/v1/mandate-interpretations",{method:"POST",body:JSON.stringify({userIntent})},token)},
+  createMandate(token: string, agentId: string, input: { userIntent: string; policy: MandatePolicy }) { return request<MandateRecord>(`/v1/agents/${agentId}/mandates`, { method: "POST", body: JSON.stringify(input) }, token); },
   resolveApproval(token: string, id: string, outcome: "APPROVED" | "DECLINED", note?: string) { return request(`/v1/approval-requests/${id}/resolve`, { method: "POST", body: JSON.stringify({ outcome, note }) }, token); },
 };
