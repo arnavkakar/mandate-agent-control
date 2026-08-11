@@ -28,6 +28,7 @@ import {
   mandateApi,
   Session,
 } from "./lib/mandate-api";
+import { copyText } from "./lib/clipboard";
 const money = (cents: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -55,6 +56,7 @@ export function AgentsLivePage({
   const [keys, setKeys] = useState<ApiKeyRecord[]>([]),
     [history, setHistory] = useState<MandateRecord[]>([]),
     [secret, setSecret] = useState(""),
+    [secretCopied, setSecretCopied] = useState(false),
     [acting, setActing] = useState(false),
     [confirmation, setConfirmation] = useState<{
       title: string;
@@ -145,6 +147,7 @@ export function AgentsLivePage({
         scopes: ["authorizations:write"],
       });
       setSecret(issued.apiKey);
+      setSecretCopied(false);
       setKeys(await mandateApi.keys(session.token, selected.id));
     } catch {
       setError("The scoped credential could not be created. Try again.");
@@ -176,6 +179,7 @@ export function AgentsLivePage({
         });
         await mandateApi.revokeKey(session.token, selected.id, key.id);
         setSecret(issued.apiKey);
+        setSecretCopied(false);
         setKeys(await mandateApi.keys(session.token, selected.id));
       },
     });
@@ -384,9 +388,12 @@ export function AgentsLivePage({
                   </div>
                   <button
                     className="secondary"
-                    onClick={() => navigator.clipboard.writeText(secret)}
+                    onClick={async () => {
+                      if (await copyText(secret)) setSecretCopied(true);
+                      else setError("Clipboard access was blocked. Select and copy the key manually.");
+                    }}
                   >
-                    <Copy /> Copy
+                    <Copy /> {secretCopied ? "Copied" : "Copy"}
                   </button>
                   <button
                     className="icon-button"

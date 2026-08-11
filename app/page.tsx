@@ -64,6 +64,7 @@ import {
   saveSession,
   Session,
 } from "./lib/mandate-api";
+import { copyText } from "./lib/clipboard";
 import { AgentsLivePage, AuditLivePage, MandateLivePage } from "./live-pages";
 
 type Decision = "APPROVED" | "APPROVAL_REQUIRED" | "DECLINED";
@@ -1983,11 +1984,10 @@ function ConnectionsPage() {
     `  -d '{"idempotencyKey":"order_01J8","amount":96,"currency":"USD","merchant":"Notion","category":"Software","country":"US"}'`,
   ].join("\n");
   async function copy(value: string, target: "key" | "snippet") {
-    try {
-      await navigator.clipboard.writeText(value);
+    if (await copyText(value)) {
       setCopied(target);
       setCopyError(false);
-    } catch {
+    } else {
       setCopyError(true);
     }
   }
