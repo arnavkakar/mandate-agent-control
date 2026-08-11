@@ -27,7 +27,7 @@ Operators create agents and versioned spending mandates in a control-center dash
 - Organization-scoped signup, login, agents, mandates, API keys, transactions, decisions, approvals, budget ledger entries, and audit events.
 - Deterministic checks cover agent status, mandate expiration, monthly budget, transaction limits, approval thresholds, category and merchant allow/block rules, country rules, and merchant novelty.
 - Risk scoring covers amount anomaly, new merchant, category mismatch, abnormal velocity, and geography mismatch.
-- The production API is hosted on Railway with PostgreSQL; the dashboard is hosted separately and must consume that API.
+- The production API, dashboard, and PostgreSQL database are hosted as separate services in the same Railway project; the dashboard consumes the API over its public service URL until private service-to-service routing is introduced.
 - No real payment processing, card storage, banking credentials, or fabricated provider integrations.
 - OpenAI Structured Outputs may interpret mandate language server-side but can never authorize a transaction.
 - External MCPs, expense systems, webhooks, and payment providers are optional adapters rather than required data sources.

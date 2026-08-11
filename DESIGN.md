@@ -1,17 +1,17 @@
 ---
 name: Mandate
-description: A calm financial control room for governing AI-agent spend.
+description: A precise authorization registry for governing AI-agent spend.
 colors:
-  control-ink: "#17151d"
-  control-ink-muted: "#777382"
-  paper: "#ffffff"
-  workspace: "#f5f4f7"
-  divider: "#e8e5ed"
-  mandate-violet: "#6c5ce7"
-  mandate-violet-deep: "#5846d6"
-  approved: "#087f6b"
-  declined: "#c83e48"
-  review: "#b86b08"
+  control-ink: "#18221f"
+  control-ink-muted: "#626c67"
+  paper: "#fbfaf6"
+  workspace: "#efeee8"
+  divider: "#d8d8cf"
+  authority: "#174b45"
+  authority-deep: "#0f3935"
+  approved: "#176b4b"
+  declined: "#a43f3f"
+  review: "#95651b"
 typography:
   headline:
     fontFamily: "var(--font-sans), Arial, sans-serif"
@@ -41,7 +41,7 @@ spacing:
   page: "32px"
 components:
   button-primary:
-    backgroundColor: "{colors.mandate-violet}"
+    backgroundColor: "{colors.authority}"
     textColor: "{colors.paper}"
     rounded: "{rounded.control}"
     height: "38px"
@@ -57,28 +57,28 @@ components:
 
 ## Overview
 
-**Creative North Star: "The Financial Control Room"**
+**Creative North Star: "The Authorization Registry"**
 
-Mandate should feel like an operator's instrument panel: calm enough for continuous use, exact enough for consequential decisions, and visibly grounded in policy rather than AI spectacle. The interface favors compact evidence, consistent status semantics, and restrained hierarchy. Brand character comes from disciplined details—precise language, tabular financial data, explainable decision traces, and a single violet authority accent—not decorative futurism.
+Mandate should feel like a financial authorization register crossed with a security-clearance dossier: calm enough for continuous use, exact enough for consequential decisions, and visibly grounded in recorded evidence rather than AI spectacle. Its recurring visual object is the authority position—scope, used amount, remaining amount, governing rules, and next human action. Brand character comes from warm paper, graphite ink, compact evidence, ruled divisions, tabular financial data, and explainable decision traces.
 
-The system is intentionally light for daytime operational work. Dark surfaces belong to the navigation rail and executable code only. White content planes sit on a cool workspace with quiet borders; elevation is rare and reserved for transient layers. Financial decisions remain legible through text and iconography as well as color.
+The system is intentionally light for daytime operational work. Dark surfaces belong to the navigation rail and executable code only. Warm paper content planes sit on a stone workspace with quiet ruled borders; elevation is rare and reserved for transient layers. Financial decisions remain legible through text and iconography as well as color.
 
 **Key Characteristics:**
 
 - Dense but ordered operational information
 - Calm, restrained financial authority
-- Violet for Mandate-owned actions; green, amber, and red only for decision semantics
+- Deep registry teal for editable authority and primary action; green, amber, and red only for decision semantics
 - Explicit simulation, policy, and human-review boundaries
 - Clear keyboard focus and responsive disclosure
 
 ## Colors
 
-The palette uses near-black ink and cool paper neutrals, with one violet product accent and three tightly governed financial status colors.
+The palette uses near-black green ink and warm paper neutrals, with one deep registry-teal authority color and three tightly governed financial status colors.
 
 ### Primary
 
-- **Mandate Violet:** The only general-purpose accent, used for primary actions, active navigation, and policy-owned emphasis.
-- **Deep Mandate Violet:** Hover and pressed treatment for primary actions.
+- **Registry Teal:** The only general-purpose authority color, used for primary actions, active navigation, and policy-owned emphasis.
+- **Deep Registry Teal:** Hover and pressed treatment for primary actions.
 
 ### Neutral
 
@@ -90,7 +90,7 @@ The palette uses near-black ink and cool paper neutrals, with one violet product
 
 ### Named Rules
 
-**The One Authority Rule.** Violet marks what Mandate controls; it never competes with status colors.
+**The One Authority Rule.** Registry teal marks what Mandate controls or what the operator can edit; it never decorates unrelated content and never competes with status colors.
 
 **The Decision Semantics Rule.** Green means approved, amber means human review, and red means declined or destructive. Every use includes a text label or icon.
 
@@ -130,15 +130,15 @@ The system is flat by default. Borders and tonal separation define ordinary surf
 
 ## Shapes
 
-Controls use gently curved 8px corners; persistent content surfaces use 12px corners; status pills are fully rounded. The form language stays compact and precise. Circles are reserved for avatars, state dots, and singular risk/identity markers—not generic decoration.
+Controls and persistent content use restrained 2–4px corners, recalling registry sheets and stamped records rather than consumer cards. Status labels are compact rectangles. Circles are reserved for state dots and singular risk markers—not generic decoration.
 
 ## Components
 
 ### Buttons
 
 - **Shape:** Compact 8px control radius with a minimum 38px desktop height and 44px mobile hit area.
-- **Primary:** Violet fill, white label, one clear action per task region.
-- **Hover / Focus:** Deeper violet on hover; a visible violet-offset focus ring on keyboard focus.
+- **Primary:** Registry-teal fill, warm-white label, one clear action per task region.
+- **Hover / Focus:** Deeper teal on hover; a visible desaturated-teal focus ring on keyboard focus.
 - **Secondary:** White paper, divider border, dark label.
 - **Destructive:** White or restrained red surface with explicit destructive copy; never icon-only for consequential actions.
 
@@ -150,7 +150,7 @@ Controls use gently curved 8px corners; persistent content surfaces use 12px cor
 ### Cards / Containers
 
 - **Corner Style:** 12px persistent surface radius.
-- **Background:** Paper on the cool workspace.
+- **Background:** Warm paper on the stone workspace.
 - **Shadow Strategy:** None at rest; border provides structure.
 - **Border:** One-pixel divider tone.
 - **Internal Padding:** 16–24px according to content density.
@@ -158,12 +158,12 @@ Controls use gently curved 8px corners; persistent content surfaces use 12px cor
 ### Inputs / Fields
 
 - **Style:** Paper background, divider stroke, 8px corners, labels always visible.
-- **Focus:** Violet border and a visible low-opacity focus ring.
+- **Focus:** Registry-teal border and a visible desaturated-teal focus ring.
 - **Error / Disabled:** Error copy names the problem and recovery; disabled state remains readable and cannot rely on opacity alone.
 
 ### Navigation
 
-The dark rail uses text labels with consistent Lucide icons. Active state combines tonal background, brighter text, and violet icon color. Mobile navigation preserves the same information architecture and closes predictably after selection.
+The dark rail uses text labels with consistent Lucide icons. Active state reverses to warm paper with dark text and a registry-teal icon. Mobile navigation preserves the same information architecture, becomes inert while closed, and closes predictably with backdrop or Escape.
 
 ### Decision Trace
 
