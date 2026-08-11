@@ -9,16 +9,14 @@ async function render(){
  return worker.fetch(new Request("http://localhost/",{headers:{accept:"text/html"}}),{ASSETS:{fetch:async()=>new Response("Not found",{status:404})}},{waitUntil(){},passThroughOnException(){}});
 }
 
-test("server-renders the Mandate control center",async()=>{
+test("server-renders the authenticated Mandate application shell",async()=>{
  const response=await render();
  assert.equal(response.status,200);
  assert.match(response.headers.get("content-type")??"",/^text\/html\b/i);
  const html=await response.text();
  assert.match(html,/<title>Mandate — Control how AI agents spend<\/title>/i);
- assert.match(html,/CONTROL CENTER/);
- assert.match(html,/Simulation mode/);
- assert.match(html,/Procurement Agent/);
- assert.match(html,/Recent decisions/);
+ assert.match(html,/Loading Mandate/);
+ assert.match(html,/type="module"/);
  assert.doesNotMatch(html,/codex-preview|Your site is taking shape/);
 });
 

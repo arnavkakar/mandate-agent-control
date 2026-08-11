@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-10T00:00:00.000Z",
+  "title": "Design System: Mandate",
+  "extensions": {
+    "colorMeta": {
+      "mandate-violet": { "role": "primary", "displayName": "Mandate Violet", "canonical": "#6c5ce7", "tonalRamp": ["#211a63", "#33268d", "#4938b8", "#6c5ce7", "#8b7df0", "#aaa0f6", "#d2ccfb", "#f0edff"] },
+      "control-ink": { "role": "neutral", "displayName": "Control Ink", "canonical": "#17151d", "tonalRamp": ["#17151d", "#2b2833", "#484451", "#686371", "#8b8794", "#aaa6b0", "#d6d2dc", "#f5f4f7"] },
+      "approved": { "role": "semantic", "displayName": "Approved Teal", "canonical": "#087f6b", "tonalRamp": ["#053d35", "#075548", "#08705f", "#087f6b", "#21a983", "#62c8ae", "#b9e7da", "#e8f7f2"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Operational Headline", "purpose": "Page and decision titles." },
+      "body": { "displayName": "Operational Body", "purpose": "Instructions and explanations." },
+      "label": { "displayName": "System Label", "purpose": "Controls, metadata, and table headings." }
+    },
+    "shadows": [
+      { "name": "transient-layer", "value": "-12px 0 40px rgba(22,18,29,0.12)", "purpose": "Decision drawers and temporary overlay layers only." }
+    ],
+    "motion": [
+      { "name": "state-change", "value": "180ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Hover, focus, drawer, and navigation state changes." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "520px" },
+      { "name": "mobile", "value": "800px" },
+      { "name": "stack", "value": "1100px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single authority action in a task region.",
+      "html": "<button class=\"ds-btn-primary\">Activate mandate</button>",
+      "css": ".ds-btn-primary{height:38px;padding:0 14px;border:1px solid #6c5ce7;border-radius:8px;background:#6c5ce7;color:#fff;font:650 12px/1 var(--font-sans,Arial,sans-serif);transition:background 180ms cubic-bezier(.16,1,.3,1)}.ds-btn-primary:hover{background:#5846d6}.ds-btn-primary:focus-visible{outline:3px solid #a99df7;outline-offset:2px}"
+    },
+    {
+      "name": "Decision Status",
+      "kind": "chip",
+      "description": "Text-first semantic authorization state.",
+      "html": "<span class=\"ds-status\"><span aria-hidden=\"true\"></span>Approved</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:#e7f5f1;color:#087f6b;font:700 10px/1 var(--font-sans,Arial,sans-serif);text-transform:uppercase}.ds-status span{width:5px;height:5px;border-radius:50%;background:currentColor}"
+    },
+    {
+      "name": "Operational Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A flat evidence surface separated by a quiet border.",
+      "html": "<section class=\"ds-card\"><h3>Authorization decision</h3><p>All deterministic rules passed.</p></section>",
+      "css": ".ds-card{padding:20px;border:1px solid #e8e5ed;border-radius:12px;background:#fff;color:#17151d}.ds-card h3{margin:0 0 8px;font:680 15px/1.25 var(--font-sans,Arial,sans-serif)}.ds-card p{margin:0;color:#777382;font:400 12px/1.5 var(--font-sans,Arial,sans-serif)}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "description": "A labeled operational input with visible focus.",
+      "html": "<label class=\"ds-field\">Merchant<input value=\"Notion\"></label>",
+      "css": ".ds-field{display:grid;gap:6px;color:#625e6b;font:650 10px/1.2 var(--font-sans,Arial,sans-serif)}.ds-field input{height:39px;padding:0 10px;border:1px solid #dfdbe5;border-radius:8px;background:#fff;color:#17151d;font:400 12px/1 var(--font-sans,Arial,sans-serif)}.ds-field input:focus-visible{outline:3px solid #f0edff;border-color:#8b7df0}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Financial Control Room",
+    "overview": "A calm operator instrument panel grounded in deterministic policy, compact evidence, and restrained financial authority.",
+    "keyCharacteristics": ["Dense but ordered operational information", "Calm financial authority", "Explicit simulation and human-review boundaries", "Clear keyboard focus and responsive disclosure"],
+    "rules": [
+      { "name": "The One Authority Rule", "body": "Violet marks what Mandate controls; it never competes with status colors.", "section": "colors" },
+      { "name": "The Flat-By-Default Rule", "body": "Persistent content surfaces use a border, not a shadow.", "section": "elevation" }
+    ],
+    "dos": ["Do foreground the current decision, remaining authority, and next required action.", "Do show complete API states for every persistent path."],
+    "donts": ["Don't use decorative uppercase eyebrows above headings.", "Don't imply real payments, integrations, customers, or compliance status."]
+  }
+}
