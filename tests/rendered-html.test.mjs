@@ -41,7 +41,7 @@ test("ships the authorization data model and safety thesis",async()=>{
  const [schema,readme,page]=await Promise.all([
   readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
   readFile(new URL("../README.md",import.meta.url),"utf8"),
-  readFile(new URL("../app/mandate-console.tsx",import.meta.url),"utf8"),
+  readFile(new URL("../app/app/page.tsx",import.meta.url),"utf8"),
  ]);
  for(const table of ["users","agents","mandates","transactions","authorizationDecisions","approvalRequests","auditEvents"]) assert.match(schema,new RegExp(`export const ${table}`));
  assert.match(readme,/does not move money/i);

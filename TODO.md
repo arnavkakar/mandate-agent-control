@@ -14,7 +14,7 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] The custom apex domain `mandate-agent.com` is verified and resolves to the Railway web service.
 - [x] The authenticated control center is live, including agents, mandates, simulator, transactions, approvals, risk activity, audit trail, and connections.
 - [x] The public homepage, metadata, robots route, sitemap route, and dynamic Open Graph image are implemented in commit `b71b6a5`.
-- [ ] **Release blocker:** production currently serves the console page and `/app` metadata at both `/` and `/app`, even though the built route manifest contains separate routes. Do not call the marketing homepage launched until Railway/vinext serves `app/page.tsx` at `/` and `app/app/page.tsx` at `/app`.
+- [x] The Railway/vinext route-module collision is fixed in source by making `/app` own the console client directly and moving its metadata into `app/app/layout.tsx`. Local production-mode verification confirms `/` is the indexable marketing page and `/app` is the no-index console.
 - [ ] After the route blocker is fixed, verify desktop and 390px mobile rendering, keyboard navigation, the CTA to `/app`, canonical URLs, `robots.txt`, `sitemap.xml`, and the Open Graph image on the custom domain.
 
 ## What has been completed
@@ -80,7 +80,8 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] Codex SEO suite `v1.9.6-codex.5` reviewed and installed locally: 26 workflows and 24 agent profiles; core verifier passes.
 - [x] Independent checks installed locally: Addy Osmani web-quality SEO and Core Web Vitals; Corey Haines content strategy, site architecture, and programmatic SEO.
 - [x] `npm i -g seo` intentionally not used because the unscoped package is ambiguous and provides weaker provenance than pinned GitHub sources.
-- [ ] Fix the Railway/vinext root-route mismatch, then run a fresh production SEO audit and save the baseline/action plan.
+- [x] Fix the Railway/vinext root-route mismatch locally; lint, production build, and rendered-route tests pass.
+- [ ] Deploy that fix, then run a fresh production SEO audit and save the baseline/action plan.
 - [ ] Connect Google Search Console and submit `https://mandate-agent.com/sitemap.xml` only after root canonical/indexing is correct.
 - [ ] Add privacy, terms, security, and responsible-disclosure pages before public acquisition.
 
@@ -131,12 +132,12 @@ Do not start broad programmatic SEO yet. Mandate does not have enough proprietar
 
 ### P0 — release correctness
 
-1. Diagnose why the Railway vinext server maps both `/` and `/app` to the `/app` page module. The deployed client manifest already lists both routes, so inspect the generated server route table/module IDs and confirm whether vinext `1.0.0-beta.2` is deduplicating the thin `app/app/page.tsx` wrapper.
-2. Prefer the smallest safe fix. Candidate: make each route import a distinct leaf component or avoid a wrapper structure that triggers page-module deduplication; upgrade vinext only if a targeted source fix fails.
-3. Deploy and verify:
+1. Push the locally verified route-isolation commit so Railway can deploy it. GitHub authentication is the only remaining deployment dependency.
+2. Verify the Railway deployment:
    - `/` contains the marketing `h1`, canonical `/`, and `index, follow`.
    - `/app` contains the console/auth UI, canonical `/app`, and `noindex, nofollow`.
    - Both routes preserve the security headers.
+3. Verify desktop and 390px mobile layout, keyboard access, CTA navigation, `robots.txt`, `sitemap.xml`, and the Open Graph image.
 
 ### P1 — launch safety and observability
 
