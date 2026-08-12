@@ -73,10 +73,36 @@ Risk and policy outputs are stored independently. Human resolution creates a new
 - Versioned mandates, immutable original decisions, and SHA-256-linked audit events.
 - CORS, rate limiting, strict request validation, Docker, and Railway configuration.
 
+## Security model
+
+Mandate treats agent requests, browser input, and language-model output as untrusted data.
+
+- SQL is issued through Drizzle parameter binding; request data is never concatenated into query text or identifiers.
+- Every object lookup that crosses a trust boundary is constrained by the authenticated organization or API-key organization.
+- Password, Google, simulator, authorization, demo-seed, and OpenAI interpretation flows have route-specific rate limits in addition to the global limit.
+- Mandate interpretation is limited to 10 calls per credential per hour by default, has a 1,400-token output ceiling and a 30-second timeout, and sends a hashed—not personally identifying—safety identifier.
+- Common prompt-like attempts to change roles, reveal hidden instructions, bypass rules, or auto-authorize are rejected before an OpenAI request and recorded in the audit trail without storing the rejected text. This filter is defense-in-depth, not the authorization boundary.
+- Model output must satisfy strict Structured Outputs and is parsed again by Zod. Server-enforced budget and transaction ceilings apply to both interpreted and manually edited policies.
+- The model has no tools, payment credentials, database access, or authorization capability. The deterministic policy engine remains the sole source of initial authorization decisions.
+- Request bodies, metadata, text, credentials, and financial values have explicit type and size limits. Database connections have connection, statement, lock, and idle-transaction timeouts.
+- Approval rows and spend budgets are locked transactionally; idempotency keys prevent duplicate agent requests; audit-chain appends are serialized per organization.
+- API responses use restrictive browser security headers and are never cached. CORS and explicit Origin enforcement use `CORS_ORIGIN` as an allowlist.
+
+Application rate limits reduce brute force, cost abuse, and ordinary request floods, but they are not volumetric DDoS protection. Railway protects network layer 4 and below but recommends a WAF such as Cloudflare for application-layer attacks. Before broad public launch, proxy `mandate-agent.com` through Cloudflare, enable its managed WAF/DDoS protection and rate-limit the API paths at the edge, while keeping Railway as the origin.
+
+Operational requirements:
+
+1. Rotate any OpenAI or OAuth secret that has ever been pasted into chat, logs, screenshots, or source control. Store replacements only in Railway secret variables.
+2. Use separate OpenAI projects/keys for production and development, configure a low project budget and alerts, and keep `OPENAI_INTERPRETATIONS_PER_HOUR` conservative.
+3. Use a strong unique `JWT_SECRET`, restrict database public networking, enable Railway backups, and test restoration.
+4. Review rate-limit and rejection logs without logging credentials or raw malicious prompts. Add alerting before inviting untrusted public traffic.
+5. Run `pnpm audit --prod`, `pnpm check`, and the critical-flow tests before every production release.
+
 ## Remaining hardening roadmap
 
-- Server-only OpenAI Structured Outputs integration with schema versioning and adversarial prompt tests.
 - Password email verification, password reset, MFA, enterprise SSO, session revocation, and audit-log export to immutable object storage.
+- Replace browser local-storage bearer sessions with Secure, HttpOnly, SameSite cookies and CSRF protection.
+- Distributed edge or Redis-backed rate limiting for multi-replica deployments, plus bot management and alerting.
 - Webhook signing, retry queues, dead-letter handling, and key rotation UX.
 - Configurable velocity windows, historical baselines, alerting, and risk calibration.
 - Optional payment-provider adapter behind an explicit simulation/production environment gate.

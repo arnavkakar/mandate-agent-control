@@ -536,6 +536,14 @@ export function MandateLivePage({
           setError(
             "OpenAI is rate-limiting requests. Wait a moment and retry.",
           );
+        else if (e.code === "PROMPT_INJECTION_DETECTED")
+          setError(
+            "These instructions contain control-like language that could override safeguards. Remove requests to ignore rules, change roles, reveal prompts, or auto-approve transactions.",
+          );
+        else if (e.status === 429)
+          setError(
+            "You have reached the hourly policy-interpretation limit. Review an existing draft or try again later.",
+          );
         else
           setError(
             "Mandate interpretation failed. Your instructions were preserved; try again.",

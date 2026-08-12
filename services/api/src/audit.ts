@@ -1,13 +1,16 @@
 import { createHash } from "node:crypto";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, sql as dsql } from "drizzle-orm";
 import { auditEvents } from "./schema.js";
 
 const stable = (value: unknown): string => value && typeof value === "object" && !Array.isArray(value)
   ? `{${Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${JSON.stringify(k)}:${stable(v)}`).join(",")}}`
   : Array.isArray(value) ? `[${value.map(stable).join(",")}]` : JSON.stringify(value);
 
-export async function appendAudit(tx: any, event: { organizationId: string; eventType: string; actorType: string; actorId: string; subjectType: string; subjectId: string; payload: Record<string, unknown> }) {
+export type AuditEventInput = { organizationId: string; eventType: string; actorType: string; actorId: string; subjectType: string; subjectId: string; payload: Record<string, unknown> };
+
+export async function appendAudit(tx: any, event: AuditEventInput) {
+  await tx.execute(dsql`select pg_advisory_xact_lock(hashtext(${`audit:${event.organizationId}`}))`);
   const [previous] = await tx.select().from(auditEvents).where(eq(auditEvents.organizationId, event.organizationId)).orderBy(desc(auditEvents.sequence)).limit(1);
   const sequence = (previous?.sequence ?? 0) + 1;
   const previousHash = previous?.eventHash ?? null;

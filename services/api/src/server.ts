@@ -4,6 +4,7 @@ import rateLimit from "@fastify/rate-limit";
 import { and, desc, eq, sql as dsql } from "drizzle-orm";
 import { z } from "zod";
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { isIP } from "node:net";
 import { db, sql } from "./db.js";
 import { env } from "./env.js";
 import {
@@ -30,40 +31,111 @@ import {
 } from "./security.js";
 import { evaluatePolicy } from "./policy.js";
 import { evaluateRisk } from "./risk.js";
-import { appendAudit, verifyAuditChain } from "./audit.js";
+import { appendAudit, verifyAuditChain, type AuditEventInput } from "./audit.js";
 import {
+  containsPromptInjection,
   interpretMandate,
   mandatePolicySchema,
 } from "./mandate-interpreter.js";
 import type { MandatePolicy } from "./domain.js";
+import {
+  containsControlCharacters,
+  stableSecurityIdentifier,
+} from "./security-controls.js";
 
-const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 64_000 });
+const app = Fastify({
+  logger: true,
+  trustProxy: true,
+  bodyLimit: 64_000,
+  requestTimeout: 35_000,
+  connectionTimeout: 10_000,
+  keepAliveTimeout: 5_000,
+  maxRequestsPerSocket: 1_000,
+});
+const DUMMY_PASSWORD_HASH = "$2b$12$iGGjMStLTxLuQNs7idfVNuAoHt7XjU3Dkp8CH.WLMb19QJ4Er83ga";
+const allowedOrigins = new Set(
+  env.CORS_ORIGIN.split(",").map((value) => value.trim()).filter(Boolean),
+);
 await app.register(cors, {
-  origin: env.CORS_ORIGIN.split(",").map((value) => value.trim()),
+  origin: [...allowedOrigins],
   credentials: true,
   methods: ["GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS"],
 });
-await app.register(rateLimit, { max: 120, timeWindow: "1 minute" });
+const clientNetworkKey = (request: FastifyRequest) => {
+  const railwayIp = request.headers["x-real-ip"];
+  if (typeof railwayIp === "string" && isIP(railwayIp)) return railwayIp;
+  return request.socket.remoteAddress ?? "unknown-client";
+};
+await app.register(rateLimit, {
+  max: 120,
+  timeWindow: "1 minute",
+  keyGenerator: clientNetworkKey,
+});
+
+app.addHook("onRequest", async (request, reply) => {
+  const origin = request.headers.origin;
+  if (origin && !allowedOrigins.has(origin))
+    return reply.code(403).send({ error: "ORIGIN_NOT_ALLOWED" });
+});
+
+app.addHook("onSend", async (_request, reply, payload) => {
+  reply.header("Cache-Control", "no-store");
+  reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+  reply.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  reply.header("Referrer-Policy", "no-referrer");
+  reply.header("X-Content-Type-Options", "nosniff");
+  reply.header("X-Frame-Options", "DENY");
+  if (env.NODE_ENV === "production")
+    reply.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  return payload;
+});
+
+const boundedText = (minimum: number, maximum: number) =>
+  z
+    .string()
+    .trim()
+    .min(minimum)
+    .max(maximum)
+    .refine((value) => !containsControlCharacters(value), "Control characters are not allowed");
+const expensiveRequestKey = (request: FastifyRequest) => {
+  const credential = request.headers.authorization ?? request.headers["x-mandate-key"];
+  return stableSecurityIdentifier(String(credential || clientNetworkKey(request)));
+};
+const appendAuditEvent = (event: AuditEventInput) =>
+  db.transaction((tx) => appendAudit(tx, event));
 
 const signupSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(12).regex(/[A-Z]/).regex(/[a-z]/).regex(/\d/),
-  organizationName: z.string().min(2),
+  name: boundedText(2, 100),
+  email: z.string().trim().email().max(254),
+  password: z.string().min(12).max(128).regex(/[A-Z]/).regex(/[a-z]/).regex(/\d/),
+  organizationName: boundedText(2, 100),
 });
 const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().trim().email().max(254),
+  password: z.string().min(1).max(128),
 });
-const googleSchema = z.object({ credential: z.string().min(100) });
+const googleSchema = z.object({ credential: z.string().min(100).max(10_000) });
+const metadataValue = z.union([
+  z.string().max(500),
+  z.number().finite(),
+  z.boolean(),
+  z.null(),
+]);
+const authorizationAmountLimit = Math.min(
+  env.MANDATE_MAX_MONTHLY_BUDGET_CENTS,
+  env.MANDATE_MAX_TRANSACTION_CENTS,
+) / 100;
 const authRequestSchema = z.object({
-  idempotencyKey: z.string().min(8).max(128),
-  amount: z.number().positive().max(10_000_000),
-  currency: z.string().length(3).default("USD"),
-  merchant: z.string().min(1).max(160),
-  category: z.string().min(1).max(80),
-  country: z.string().length(2),
-  metadata: z.record(z.string(), z.unknown()).default({}),
+  idempotencyKey: z.string().trim().min(8).max(128).regex(/^[A-Za-z0-9._:-]+$/),
+  amount: z.number().positive().max(authorizationAmountLimit),
+  currency: z.string().trim().length(3).regex(/^[A-Za-z]{3}$/).transform((value) => value.toUpperCase()).default("USD"),
+  merchant: boundedText(1, 160),
+  category: boundedText(1, 80),
+  country: z.string().trim().length(2).regex(/^[A-Za-z]{2}$/).transform((value) => value.toUpperCase()),
+  metadata: z.record(z.string().max(64), metadataValue).refine(
+    (value) => JSON.stringify(value).length <= 4096,
+    "Metadata is too large",
+  ).default({}),
 });
 const googleKeys = createRemoteJWKSet(
   new URL("https://www.googleapis.com/oauth2/v3/certs"),
@@ -103,14 +175,11 @@ app.get("/v1/auth/google/config", async () => ({
   enabled: Boolean(env.GOOGLE_CLIENT_ID),
   clientId: env.GOOGLE_CLIENT_ID ?? null,
 }));
-app.post("/v1/auth/google", async (request, reply) => {
+app.post("/v1/auth/google", { config: { rateLimit: { max: 10, timeWindow: "15 minutes", groupId: "AUTH_GOOGLE" } } }, async (request, reply) => {
   if (!env.GOOGLE_CLIENT_ID)
     return reply.code(503).send({ error: "GOOGLE_AUTH_NOT_CONFIGURED" });
   const origin = request.headers.origin;
-  const allowedOrigins = env.CORS_ORIGIN.split(",").map((value) =>
-    value.trim(),
-  );
-  if (origin && !allowedOrigins.includes(origin))
+  if (origin && !allowedOrigins.has(origin))
     return reply.code(403).send({ error: "ORIGIN_NOT_ALLOWED" });
   const { credential } = googleSchema.parse(request.body);
   let payload;
@@ -242,7 +311,7 @@ app.post("/v1/auth/google", async (request, reply) => {
     organization: result.organization,
   };
 });
-app.post("/v1/auth/signup", async (request, reply) => {
+app.post("/v1/auth/signup", { config: { rateLimit: { max: 5, timeWindow: "1 hour", groupId: "AUTH_SIGNUP" } } }, async (request, reply) => {
   const input = signupSchema.parse(request.body);
   const slug = `${input.organizationName
     .toLowerCase()
@@ -287,18 +356,18 @@ app.post("/v1/auth/signup", async (request, reply) => {
       organization: result.org,
     });
 });
-app.post("/v1/auth/login", async (request, reply) => {
+app.post("/v1/auth/login", { config: { rateLimit: { max: 10, timeWindow: "15 minutes", groupId: "AUTH_LOGIN" } } }, async (request, reply) => {
   const input = loginSchema.parse(request.body);
   const [user] = await db
     .select()
     .from(users)
     .where(eq(users.email, input.email.toLowerCase()))
     .limit(1);
-  if (
-    !user ||
-    !user.passwordHash ||
-    !(await verifyPassword(input.password, user.passwordHash))
-  )
+  const passwordValid = await verifyPassword(
+    input.password,
+    user?.passwordHash ?? DUMMY_PASSWORD_HASH,
+  );
+  if (!user || !user.passwordHash || !passwordValid)
     return reply.code(401).send({ error: "INVALID_CREDENTIALS" });
   const [membership] = await db
     .select()
@@ -336,13 +405,37 @@ app.get("/v1/me", async (request) => {
     throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
   return { user, organization };
 });
-app.post("/v1/mandate-interpretations", async (request, reply) => {
+app.post("/v1/mandate-interpretations", { config: { rateLimit: {
+  max: env.OPENAI_INTERPRETATIONS_PER_HOUR,
+  timeWindow: "1 hour",
+  groupId: "OPENAI_INTERPRETATION",
+  keyGenerator: expensiveRequestKey,
+} } }, async (request, reply) => {
   const auth = await human(request);
   const { userIntent } = z
-    .object({ userIntent: z.string().min(10).max(5000) })
+    .object({ userIntent: boundedText(10, 5000) })
     .parse(request.body);
-  const interpretation = await interpretMandate(userIntent);
-  await appendAudit(db, {
+  if (containsPromptInjection(userIntent)) {
+    await appendAuditEvent({
+      organizationId: auth.organizationId,
+      eventType: "MANDATE_INTERPRETATION_REJECTED",
+      actorType: "USER",
+      actorId: auth.userId,
+      subjectType: "MANDATE_DRAFT",
+      subjectId: crypto.randomUUID(),
+      payload: {
+        reason: "PROMPT_INJECTION_DETECTED",
+        inputHash: stableSecurityIdentifier(userIntent),
+        inputLength: userIntent.length,
+      },
+    });
+    return reply.code(422).send({ error: "PROMPT_INJECTION_DETECTED" });
+  }
+  const interpretation = await interpretMandate(
+    userIntent,
+    stableSecurityIdentifier(`${auth.organizationId}:${auth.userId}`),
+  );
+  await appendAuditEvent({
     organizationId: auth.organizationId,
     eventType: "MANDATE_INTERPRETED",
     actorType: "USER",
@@ -401,13 +494,13 @@ app.get("/v1/agents", async (request) => {
 app.post("/v1/agents", async (request, reply) => {
   const auth = await human(request);
   const input = z
-    .object({ name: z.string().min(2), purpose: z.string().min(3) })
+    .object({ name: boundedText(2, 100), purpose: boundedText(3, 500) })
     .parse(request.body);
   const [agent] = await db
     .insert(agents)
     .values({ organizationId: auth.organizationId, ...input })
     .returning();
-  await appendAudit(db, {
+  await appendAuditEvent({
     organizationId: auth.organizationId,
     eventType: "AGENT_CREATED",
     actorType: "USER",
@@ -424,8 +517,8 @@ app.patch("/v1/agents/:id", async (request, reply) => {
   const input = z
     .object({
       status: z.enum(["ACTIVE", "PAUSED", "REVOKED"]).optional(),
-      name: z.string().min(2).optional(),
-      purpose: z.string().min(3).optional(),
+      name: boundedText(2, 100).optional(),
+      purpose: boundedText(3, 500).optional(),
     })
     .refine((value) => Object.keys(value).length > 0)
     .parse(request.body);
@@ -482,7 +575,7 @@ app.post("/v1/agents/:id/keys", async (request, reply) => {
     return reply.code(409).send({ error: "AGENT_REVOKED" });
   const input = z
     .object({
-      name: z.string().min(2),
+      name: boundedText(2, 100),
       scopes: z
         .array(z.enum(["authorizations:write", "decisions:read"]))
         .min(1),
@@ -500,7 +593,7 @@ app.post("/v1/agents/:id/keys", async (request, reply) => {
       keyHash: issued.hash,
     })
     .returning();
-  await appendAudit(db, {
+  await appendAuditEvent({
     organizationId: auth.organizationId,
     eventType: "API_KEY_CREATED",
     actorType: "USER",
@@ -571,7 +664,7 @@ app.delete("/v1/agents/:agentId/keys/:keyId", async (request, reply) => {
     )
     .returning({ id: apiKeys.id, revokedAt: apiKeys.revokedAt });
   if (!key) return reply.code(404).send({ error: "API_KEY_NOT_FOUND" });
-  await appendAudit(db, {
+  await appendAuditEvent({
     organizationId: auth.organizationId,
     eventType: "API_KEY_REVOKED",
     actorType: "USER",
@@ -674,7 +767,7 @@ app.post("/v1/agents/:id/mandates", async (request, reply) => {
   const auth = await human(request);
   const { id } = z.object({ id: z.string().uuid() }).parse(request.params);
   const input = z
-    .object({ userIntent: z.string().min(10), policy: mandatePolicySchema })
+    .object({ userIntent: boundedText(10, 5000), policy: mandatePolicySchema })
     .parse(request.body);
   const [agent] = await db
     .select({ id: agents.id, status: agents.status })
@@ -749,6 +842,7 @@ async function authorizeAgent(
       .from(transactions)
       .where(
         and(
+          eq(transactions.organizationId, organizationId),
           eq(transactions.agentId, agentId),
           eq(transactions.idempotencyKey, input.idempotencyKey),
         ),
@@ -772,7 +866,13 @@ async function authorizeAgent(
     const [mandate] = await tx
       .select()
       .from(mandates)
-      .where(and(eq(mandates.agentId, agentId), eq(mandates.active, true)))
+      .where(
+        and(
+          eq(mandates.organizationId, organizationId),
+          eq(mandates.agentId, agentId),
+          eq(mandates.active, true),
+        ),
+      )
       .orderBy(dsql`${mandates.version} desc`)
       .limit(1);
     if (!agent || !mandate) throw new Error("NO_ACTIVE_MANDATE");
@@ -886,7 +986,12 @@ async function authorizeAgent(
     return { transaction, decision, replayed: false };
   });
 }
-app.post("/v1/authorization-requests", async (request, reply) => {
+app.post("/v1/authorization-requests", { config: { rateLimit: {
+  max: 120,
+  timeWindow: "1 minute",
+  groupId: "AGENT_AUTHORIZATION",
+  keyGenerator: expensiveRequestKey,
+} } }, async (request, reply) => {
   const rawKey = String(request.headers["x-mandate-key"] ?? "");
   const [key] = await db
     .select()
@@ -914,7 +1019,12 @@ app.post("/v1/authorization-requests", async (request, reply) => {
     throw error;
   }
 });
-app.post("/v1/simulator/authorization-requests", async (request, reply) => {
+app.post("/v1/simulator/authorization-requests", { config: { rateLimit: {
+  max: 30,
+  timeWindow: "1 minute",
+  groupId: "SIMULATOR",
+  keyGenerator: expensiveRequestKey,
+} } }, async (request, reply) => {
   const auth = await human(request);
   const input = z
     .object({ agentId: z.string().uuid(), request: authRequestSchema })
@@ -931,7 +1041,7 @@ app.post("/v1/simulator/authorization-requests", async (request, reply) => {
     throw error;
   }
 });
-app.post("/v1/demo-seed", async (request, reply) => {
+app.post("/v1/demo-seed", { config: { rateLimit: { max: 2, timeWindow: "1 hour", groupId: "DEMO_SEED", keyGenerator: expensiveRequestKey } } }, async (request, reply) => {
   const auth = await human(request);
   const [existing] = await db
     .select({ count: dsql<number>`count(*)` })
@@ -1050,7 +1160,7 @@ app.post("/v1/demo-seed", async (request, reply) => {
       metadata: { syntheticDemo: true },
     });
   }
-  await appendAudit(db, {
+  await appendAuditEvent({
     organizationId: auth.organizationId,
     eventType: "DEMO_WORKSPACE_SEEDED",
     actorType: "USER",
@@ -1239,7 +1349,8 @@ app.post("/v1/approval-requests/:id/resolve", async (request, reply) => {
           eq(approvalRequests.organizationId, auth.organizationId),
         ),
       )
-      .limit(1);
+      .limit(1)
+      .for("update");
     if (
       !approval ||
       approval.status !== "PENDING" ||
@@ -1249,19 +1360,37 @@ app.post("/v1/approval-requests/:id/resolve", async (request, reply) => {
     const [decision] = await tx
       .select()
       .from(authorizationDecisions)
-      .where(eq(authorizationDecisions.id, approval.decisionId))
+      .where(
+        and(
+          eq(authorizationDecisions.id, approval.decisionId),
+          eq(authorizationDecisions.organizationId, auth.organizationId),
+        ),
+      )
       .limit(1);
+    if (!decision) return null;
     const [transaction] = await tx
       .select()
       .from(transactions)
-      .where(eq(transactions.id, decision.transactionId))
+      .where(
+        and(
+          eq(transactions.id, decision.transactionId),
+          eq(transactions.organizationId, auth.organizationId),
+        ),
+      )
       .limit(1);
+    if (!transaction) return null;
     if (input.outcome === "APPROVED") {
       const [mandate] = await tx
         .select()
         .from(mandates)
-        .where(eq(mandates.id, decision.mandateId))
+        .where(
+          and(
+            eq(mandates.id, decision.mandateId),
+            eq(mandates.organizationId, auth.organizationId),
+          ),
+        )
         .limit(1);
+      if (!mandate) return null;
       const period = new Date().toISOString().slice(0, 7);
       await tx.execute(
         dsql`select pg_advisory_xact_lock(hashtext(${transaction.agentId}))`,
@@ -1326,17 +1455,35 @@ app.setErrorHandler((error: unknown, _request, reply) => {
     return reply
       .code(400)
       .send({ error: "INVALID_REQUEST", issues: error.issues });
-  app.log.error(error);
   const failure = error as {
     statusCode?: number;
     code?: string;
     name?: string;
   };
+  if (failure.statusCode === 429)
+    return reply.code(429).send({ error: "RATE_LIMIT_EXCEEDED" });
+  if (failure.code === "23505")
+    return reply.code(409).send({ error: "RESOURCE_ALREADY_EXISTS" });
+  const safeCodes = new Set([
+    "ACCOUNT_LINKING_REQUIRED",
+    "BUDGET_EXCEEDED",
+    "MANDATE_INTERPRETATION_FAILED",
+    "MANDATE_INTERPRETER_NOT_CONFIGURED",
+    "OPENAI_BILLING_REQUIRED",
+    "OPENAI_RATE_LIMITED",
+    "PROMPT_INJECTION_DETECTED",
+    "SESSION_EXPIRED",
+  ]);
+  if (!failure.statusCode || failure.statusCode >= 500) app.log.error(error);
   return reply
     .code(failure.statusCode ?? 500)
     .send({
       error:
-        failure.code ?? (failure.statusCode ? failure.name : "INTERNAL_ERROR"),
+        failure.code && safeCodes.has(failure.code)
+          ? failure.code
+          : failure.statusCode && failure.statusCode < 500
+            ? (failure.name ?? "REQUEST_FAILED")
+            : "INTERNAL_ERROR",
     });
 });
 
