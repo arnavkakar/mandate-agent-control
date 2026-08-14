@@ -1,6 +1,6 @@
 # Mandate Delivery Tracker
 
-Last updated: 2026-08-12  
+Last updated: 2026-08-14
 Repository: `arnavkakar/mandate-agent-control`  
 Production web: `https://mandate-agent.com`  
 Production API: `https://mandate-agent-control-production.up.railway.app`
@@ -15,7 +15,8 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] The authenticated control center is live, including agents, mandates, simulator, transactions, approvals, risk activity, audit trail, and connections.
 - [x] The public homepage, metadata, robots route, sitemap route, and dynamic Open Graph image are implemented in commit `b71b6a5`.
 - [x] The Railway/vinext route-module collision is fixed in source by making `/app` own the console client directly and moving its metadata into `app/app/layout.tsx`. Local production-mode verification confirms `/` is the indexable marketing page and `/app` is the no-index console.
-- [ ] After the route blocker is fixed, verify desktop and 390px mobile rendering, keyboard navigation, the CTA to `/app`, canonical URLs, `robots.txt`, `sitemap.xml`, and the Open Graph image on the custom domain.
+- [ ] Railway built commit `3356605` successfully but later marked it Removed and retained `b71b6a5` as Active. The next deployment must promote current HEAD before production SEO or visual verification can be signed off.
+- [ ] After current HEAD is active, verify desktop and 390px mobile rendering, keyboard navigation, the CTA to `/app`, canonical URLs, `robots.txt`, `sitemap.xml`, `llms.txt`, `security.txt`, and the Open Graph image on the custom domain.
 
 ## What has been completed
 
@@ -80,6 +81,9 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] Codex SEO suite `v1.9.6-codex.5` reviewed and installed locally: 26 workflows and 24 agent profiles; core verifier passes.
 - [x] Independent checks installed locally: Addy Osmani web-quality SEO and Core Web Vitals; Corey Haines content strategy, site architecture, and programmatic SEO.
 - [x] `npm i -g seo` intentionally not used because the unscoped package is ambiguous and provides weaker provenance than pinned GitHub sources.
+- [x] Publish honest `/security`, `/privacy`, and `/terms` trust pages with canonical metadata and internal footer navigation.
+- [x] Add `/llms.txt`, explicit AI-search crawler access, `/.well-known/security.txt`, and a repository security-reporting policy.
+- [x] Local production build, lint, and four rendered-route regression tests pass for the complete trust/SEO surface.
 - [x] Fix the Railway/vinext root-route mismatch locally; lint, production build, and rendered-route tests pass.
 - [ ] Deploy that fix, then run a fresh production SEO audit and save the baseline/action plan.
 - [ ] Connect Google Search Console and submit `https://mandate-agent.com/sitemap.xml` only after root canonical/indexing is correct.
@@ -132,7 +136,7 @@ Do not start broad programmatic SEO yet. Mandate does not have enough proprietar
 
 ### P0 — release correctness
 
-1. Push the locally verified route-isolation commit so Railway can deploy it. GitHub authentication is the only remaining deployment dependency.
+1. Promote the latest GitHub deployment in Railway. The source connection is on `main` with automatic deploys enabled, but Railway retained the earlier deployment after the successful route-fix build was removed.
 2. Verify the Railway deployment:
    - `/` contains the marketing `h1`, canonical `/`, and `index, follow`.
    - `/app` contains the console/auth UI, canonical `/app`, and `noindex, nofollow`.

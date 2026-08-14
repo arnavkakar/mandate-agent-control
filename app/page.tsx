@@ -73,6 +73,7 @@ export default function MarketingHome() {
           <a href="#how-it-works">How it works</a>
           <a href="#controls">Controls</a>
           <a href="#api">API</a>
+          <Link href="/security">Security</Link>
           <Link href="/app">Sign in</Link>
           <Link className="marketing-nav-cta" href="/app">
             Create workspace
@@ -307,7 +308,7 @@ export default function MarketingHome() {
           <span>mandate</span>
         </Link>
         <p>Deterministic authorization controls for simulated AI-agent payments.</p>
-        <div><Link href="/app">Sign in</Link><a href="#api">API</a><a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a></div>
+        <div><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a></div>
       </footer>
     </main>
   );

@@ -37,6 +37,23 @@ test("keeps the authenticated Mandate console at /app",async()=>{
  assert.match(html,/robots[^>]+noindex/i);
 });
 
+test("publishes indexable trust pages and machine-readable policy files",async()=>{
+ for(const [path,needle] of [["/security",/language model never holds financial authority/i],["/privacy",/Data Mandate receives/i],["/terms",/simulation and authorization prototype/i]]){
+  const response=await renderPath(path);
+  assert.equal(response.status,200);
+  const html=await response.text();
+  assert.match(html,needle);
+  assert.doesNotMatch(html,/robots[^>]+noindex/i);
+ }
+ const llms=await renderPath("/llms.txt");
+ assert.equal(llms.status,200);
+ assert.match(llms.headers.get("content-type")??"",/^text\/plain\b/i);
+ assert.match(await llms.text(),/deterministic policy engine authorizes them/i);
+ const security=await renderPath("/.well-known/security.txt");
+ assert.equal(security.status,200);
+ assert.match(await security.text(),/security\/advisories\/new/i);
+});
+
 test("ships the authorization data model and safety thesis",async()=>{
  const [schema,readme,page]=await Promise.all([
   readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),
