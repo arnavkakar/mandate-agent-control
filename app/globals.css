@@ -189,7 +189,7 @@ button {
   margin-left: 238px;
   min-height: 100vh;
 }
-header {
+.app-shell main > header {
   height: 84px;
   background: #fff;
   border-bottom: 1px solid var(--line);
@@ -201,7 +201,7 @@ header {
   top: 0;
   z-index: 20;
 }
-header h1 {
+.app-shell main > header h1 {
   font-size: 22px;
   margin: 2px 0 0;
   letter-spacing: -0.5px;
@@ -1672,11 +1672,11 @@ textarea:focus-visible {
   .content {
     padding: 20px 15px;
   }
-  header {
+  .app-shell main > header {
     padding: 0 16px;
     height: 73px;
   }
-  header > div:nth-child(2) {
+  .app-shell main > header > div:nth-child(2) {
     margin-right: auto;
   }
   .system-status,
@@ -1722,7 +1722,7 @@ textarea:focus-visible {
   }
 }
 @media (max-width: 520px) {
-  header h1 {
+  .app-shell main > header h1 {
     font-size: 18px;
   }
   .header-actions .primary {
@@ -3593,12 +3593,12 @@ body {
 .live-dot {
   box-shadow: none;
 }
-header {
+.app-shell main > header {
   background: rgba(251, 250, 246, 0.96);
   height: 78px;
   padding: 0 34px;
 }
-header h1 {
+.app-shell main > header h1 {
   font-family: "Newsreader Variable", Georgia, serif;
   font-size: 24px;
   font-weight: 600;
@@ -4119,17 +4119,17 @@ tbody tr:hover {
     width: 100%;
     min-width: 0;
   }
-  header {
+  .app-shell main > header {
     height: 72px;
     padding: 0 16px;
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
     gap: 10px;
   }
-  header > div:nth-child(2) {
+  .app-shell main > header > div:nth-child(2) {
     min-width: 0;
   }
-  header h1 {
+  .app-shell main > header h1 {
     font-size: 21px;
     white-space: nowrap;
     overflow: hidden;
