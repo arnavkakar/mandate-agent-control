@@ -13,9 +13,10 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] The API health endpoint is live and the dashboard can authenticate against Railway.
 - [x] The custom apex domain `mandate-agent.com` is verified and resolves to the Railway web service.
 - [x] The authenticated control center is live, including agents, mandates, simulator, transactions, approvals, risk activity, audit trail, and connections.
-- [x] The public homepage, metadata, robots route, sitemap route, and dynamic Open Graph image are implemented in commit `b71b6a5`.
-- [ ] **Release blocker:** Railway production maps the literal `/app` route segment to the framework app root and leaks its `noindex` metadata across public pages. Current source removes the collision by moving the console to `/console`; `/app` is retained only as a compatibility redirect.
-- [ ] After the collision-free route is active, verify desktop and 390px mobile rendering, keyboard navigation, the CTA to `/console`, canonical URLs, `robots.txt`, `sitemap.xml`, `llms.txt`, `security.txt`, and the Open Graph image on the custom domain.
+- [x] The public homepage, trust pages, metadata, robots route, sitemap route, `llms.txt`, security contact route, and dynamic Open Graph image are deployed.
+- [x] The Railway/Vinext `/app` route collision is resolved: the console lives at `/console`, and `/app` returns a compatibility redirect.
+- [x] Production verifies the marketing root, console isolation, trust-page canonicals, robots, sitemap, `llms.txt`, security contact, and Open Graph image.
+- [ ] Complete live 390px viewport and hands-on keyboard/screen-reader verification. Source responsive fixes and desktop DOM checks pass, but the automated browser viewport and AccessLint Chrome helper were unavailable in this sandbox.
 
 ## What has been completed
 
@@ -70,13 +71,13 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] Mobile layout, Connections overflow, Create Mandate reflow, touch targets, sidebar inert state, dialog labels, Escape handling, and focus restoration were improved.
 - [x] Deterministic Impeccable detector returned no findings after the production UI pass.
 - [ ] Complete focus trapping/background inertness for every modal, drawer, and mobile navigation panel.
-- [ ] Run a full live WCAG 2.2 audit on populated representative states after the public route blocker is resolved.
+- [ ] Run a full live WCAG 2.2 audit on populated representative states. AccessLint installation succeeded, but its sandboxed Chrome debugging port did not become reachable, so no automated pass is claimed.
 
 ### Public website and SEO foundation
 
 - [x] Marketing homepage designed around the product-specific authorization boundary and decision trace.
 - [x] Console moved in source to `/console` with `noindex, nofollow` metadata; `/app` is a compatibility redirect.
-- [x] Root metadata, canonical URL, SoftwareApplication JSON-LD, `robots.ts`, `sitemap.ts`, and dynamic `opengraph-image.tsx` implemented.
+- [x] Root metadata, canonical URL, JSON-LD graph (`Organization`, `WebSite`, `WebPage`, `SoftwareApplication`), `robots.ts`, `sitemap.ts`, and dynamic `opengraph-image.tsx` implemented.
 - [x] Codex SEO suite `v1.9.6-codex.5` reviewed and installed locally: 26 workflows and 24 agent profiles; core verifier passes.
 - [x] Independent checks installed locally: Addy Osmani web-quality SEO and Core Web Vitals; Corey Haines content strategy, site architecture, and programmatic SEO.
 - [x] `npm i -g seo` intentionally not used because the unscoped package is ambiguous and provides weaker provenance than pinned GitHub sources.
@@ -84,9 +85,9 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] Add `/llms.txt`, explicit AI-search crawler access, `/.well-known/security.txt`, and a repository security-reporting policy.
 - [x] Local production build, lint, and four rendered-route regression tests pass for the complete trust/SEO surface.
 - [x] Fix the Railway/vinext root-route mismatch locally; lint, production build, and rendered-route tests pass.
-- [ ] Deploy that fix, then run a fresh production SEO audit and save the baseline/action plan.
+- [x] Deploy the route fix and run fresh production schema, sitemap, GEO, and performance checks; results and limitations are recorded in `SEO-BASELINE.md`.
 - [ ] Connect Google Search Console and submit `https://mandate-agent.com/sitemap.xml` only after root canonical/indexing is correct.
-- [ ] Add privacy, terms, security, and responsible-disclosure pages before public acquisition.
+- [x] Add privacy, terms, security, and responsible-disclosure pages before public acquisition.
 
 ## Approved SEO and site architecture direction
 
@@ -135,13 +136,9 @@ Do not start broad programmatic SEO yet. Mandate does not have enough proprietar
 
 ### P0 — release correctness
 
-1. Promote the latest GitHub deployment in Railway. The source connection is on `main` with automatic deploys enabled, but Railway retained the earlier deployment after the successful route-fix build was removed.
-2. Verify the Railway deployment:
-   - `/` contains the marketing `h1`, canonical `/`, and `index, follow`.
-   - `/console` contains the console/auth UI, canonical `/console`, and `noindex, nofollow`.
-   - `/app` redirects to `/console` without becoming an application page module.
-   - Both routes preserve the security headers.
-3. Verify desktop and 390px mobile layout, keyboard access, CTA navigation, `robots.txt`, `sitemap.xml`, and the Open Graph image.
+1. Complete live 390px mobile rendering and hands-on keyboard/screen-reader checks for the homepage, trust pages, authentication, and populated console flows.
+2. Re-run the production critical-flow suite after any authentication, routing, or authorization change.
+3. Keep `/console` excluded from indexing and verify `/app` remains redirect-only after framework upgrades.
 
 ### P1 — launch safety and observability
 
@@ -152,11 +149,10 @@ Do not start broad programmatic SEO yet. Mandate does not have enough proprietar
 
 ### P1 — SEO launch essentials
 
-1. Publish `/security`, `/privacy`, and `/terms`.
-2. Publish developer quickstart/API/MCP documentation with copy-pastable requests and honest simulation boundaries.
-3. Run Codex SEO technical, schema, sitemap, GEO, and performance checks on the live domain.
-4. Validate JSON-LD with Schema.org and Google Rich Results tools. Do not add commercial FAQ schema solely for rich-result hopes.
-5. Connect Search Console and submit the sitemap.
+1. Publish developer quickstart/API/MCP documentation with copy-pastable requests and honest simulation boundaries.
+2. Validate JSON-LD with Schema.org and Google Rich Results tools. Do not add commercial FAQ schema solely for rich-result hopes.
+3. Connect Search Console and submit the sitemap.
+4. Obtain real PageSpeed/CrUX evidence; the current 35/100 performance score is a heuristic, not field data.
 
 ### P2 — content and conversion
 

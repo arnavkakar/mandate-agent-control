@@ -62,6 +62,7 @@ export default function MarketingHome() {
         "@id": "https://mandate-agent.com/#webpage",
         name: "Mandate — Authorization controls for AI-agent spending",
         url: "https://mandate-agent.com/",
+        dateModified: "2026-08-14",
         isPartOf: { "@id": "https://mandate-agent.com/#website" },
         about: { "@id": "https://mandate-agent.com/#software" },
       },
@@ -355,7 +356,10 @@ export default function MarketingHome() {
           <span className="marketing-brand-mark"><LockKeyhole size={16} /></span>
           <span>mandate</span>
         </Link>
-        <p>Deterministic authorization controls for simulated AI-agent payments. Reviewed August 14, 2026.</p>
+        <p>
+          Deterministic authorization controls for simulated AI-agent payments.
+          Updated August 14, 2026 by the Mandate project maintainers.
+        </p>
         <div><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a></div>
       </footer>
     </main>
