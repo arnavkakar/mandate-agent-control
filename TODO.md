@@ -14,9 +14,8 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] The custom apex domain `mandate-agent.com` is verified and resolves to the Railway web service.
 - [x] The authenticated control center is live, including agents, mandates, simulator, transactions, approvals, risk activity, audit trail, and connections.
 - [x] The public homepage, metadata, robots route, sitemap route, and dynamic Open Graph image are implemented in commit `b71b6a5`.
-- [x] The Railway/vinext route-module collision is fixed in source by making `/app` own the console client directly and moving its metadata into `app/app/layout.tsx`. Local production-mode verification confirms `/` is the indexable marketing page and `/app` is the no-index console.
-- [ ] Railway built commit `3356605` successfully but later marked it Removed and retained `b71b6a5` as Active. The next deployment must promote current HEAD before production SEO or visual verification can be signed off.
-- [ ] After current HEAD is active, verify desktop and 390px mobile rendering, keyboard navigation, the CTA to `/app`, canonical URLs, `robots.txt`, `sitemap.xml`, `llms.txt`, `security.txt`, and the Open Graph image on the custom domain.
+- [ ] **Release blocker:** Railway production maps the literal `/app` route segment to the framework app root and leaks its `noindex` metadata across public pages. Current source removes the collision by moving the console to `/console`; `/app` is retained only as a compatibility redirect.
+- [ ] After the collision-free route is active, verify desktop and 390px mobile rendering, keyboard navigation, the CTA to `/console`, canonical URLs, `robots.txt`, `sitemap.xml`, `llms.txt`, `security.txt`, and the Open Graph image on the custom domain.
 
 ## What has been completed
 
@@ -76,7 +75,7 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 ### Public website and SEO foundation
 
 - [x] Marketing homepage designed around the product-specific authorization boundary and decision trace.
-- [x] Console moved in source to `/app` with `noindex, nofollow` metadata.
+- [x] Console moved in source to `/console` with `noindex, nofollow` metadata; `/app` is a compatibility redirect.
 - [x] Root metadata, canonical URL, SoftwareApplication JSON-LD, `robots.ts`, `sitemap.ts`, and dynamic `opengraph-image.tsx` implemented.
 - [x] Codex SEO suite `v1.9.6-codex.5` reviewed and installed locally: 26 workflows and 24 agent profiles; core verifier passes.
 - [x] Independent checks installed locally: Addy Osmani web-quality SEO and Core Web Vitals; Corey Haines content strategy, site architecture, and programmatic SEO.
@@ -117,7 +116,7 @@ Homepage (/)
 ├── Security (/security)
 ├── Privacy (/privacy)
 ├── Terms (/terms)
-└── Console (/app, noindex)
+└── Console (/console, noindex; /app redirects here)
 ```
 
 Recommended header: Product, Use cases, Developers, Security, Pricing, then the Create workspace CTA. Keep resources and legal pages in the footer until content volume justifies more navigation.
@@ -139,7 +138,8 @@ Do not start broad programmatic SEO yet. Mandate does not have enough proprietar
 1. Promote the latest GitHub deployment in Railway. The source connection is on `main` with automatic deploys enabled, but Railway retained the earlier deployment after the successful route-fix build was removed.
 2. Verify the Railway deployment:
    - `/` contains the marketing `h1`, canonical `/`, and `index, follow`.
-   - `/app` contains the console/auth UI, canonical `/app`, and `noindex, nofollow`.
+   - `/console` contains the console/auth UI, canonical `/console`, and `noindex, nofollow`.
+   - `/app` redirects to `/console` without becoming an application page module.
    - Both routes preserve the security headers.
 3. Verify desktop and 390px mobile layout, keyboard access, CTA navigation, `robots.txt`, `sitemap.xml`, and the Open Graph image.
 

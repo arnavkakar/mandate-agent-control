@@ -63,9 +63,9 @@ import {
   MANDATE_API_URL,
   saveSession,
   Session,
-} from "../lib/mandate-api";
-import { copyText } from "../lib/clipboard";
-import { AgentsLivePage, AuditLivePage, MandateLivePage } from "../live-pages";
+} from "./lib/mandate-api";
+import { copyText } from "./lib/clipboard";
+import { AgentsLivePage, AuditLivePage, MandateLivePage } from "./live-pages";
 
 type Decision = "APPROVED" | "APPROVAL_REQUIRED" | "DECLINED";
 type View =

@@ -74,8 +74,8 @@ export default function MarketingHome() {
           <a href="#controls">Controls</a>
           <a href="#api">API</a>
           <Link href="/security">Security</Link>
-          <Link href="/app">Sign in</Link>
-          <Link className="marketing-nav-cta" href="/app">
+          <Link href="/console">Sign in</Link>
+          <Link className="marketing-nav-cta" href="/console">
             Create workspace
           </Link>
         </div>
@@ -98,7 +98,7 @@ export default function MarketingHome() {
             reason trail.
           </p>
           <div className="marketing-hero-actions">
-            <Link className="marketing-primary" href="/app">
+            <Link className="marketing-primary" href="/console">
               Create a workspace <ArrowRight size={17} />
             </Link>
             <a className="marketing-secondary" href="#decision-trace">
@@ -297,7 +297,7 @@ export default function MarketingHome() {
           <h2>Give your agents boundaries before you give them a budget.</h2>
           <p>Create a workspace, define one mandate, and test the full decision path in simulation.</p>
         </div>
-        <Link className="marketing-primary" href="/app">
+        <Link className="marketing-primary" href="/console">
           Create a workspace <ArrowRight size={17} />
         </Link>
       </section>

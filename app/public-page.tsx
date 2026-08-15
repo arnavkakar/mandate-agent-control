@@ -16,7 +16,7 @@ export function PublicHeader() {
         <Link href="/#controls">Controls</Link>
         <Link href="/#api">API</Link>
         <Link href="/security">Security</Link>
-        <Link className="marketing-nav-cta" href="/app">
+        <Link className="marketing-nav-cta" href="/console">
           Open console
         </Link>
       </div>
@@ -74,7 +74,7 @@ export function PublicPage({
             <strong>See the authorization boundary in practice.</strong>
             <p>Create a workspace and test simulated requests. No money moves.</p>
           </div>
-          <Link className="marketing-primary" href="/app">
+          <Link className="marketing-primary" href="/console">
             Open the console <ArrowRight size={17} />
           </Link>
         </aside>
