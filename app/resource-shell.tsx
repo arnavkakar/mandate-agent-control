@@ -1,4 +1,5 @@
-import Link from "next/link";
+/* Native anchors are intentional: Vinext's next/link prefetch runtime currently breaks public navigation. */
+/* eslint-disable @next/next/no-html-link-for-pages */
 import { ArrowRight, Clock3 } from "lucide-react";
 import type { ReactNode } from "react";
 import { PublicFooter, PublicHeader } from "./public-page";
@@ -26,10 +27,10 @@ export function Breadcrumbs({ items }: { items: Array<{ href?: string; label: st
   return (
     <nav className="resource-breadcrumbs" aria-label="Breadcrumb">
       <ol>
-        <li><Link href="/">Home</Link></li>
+        <li><a href="/">Home</a></li>
         {items.map((item) => (
           <li key={item.label} aria-current={item.href ? undefined : "page"}>
-            {item.href ? <Link href={item.href}>{item.label}</Link> : item.label}
+            {item.href ? <a href={item.href}>{item.label}</a> : item.label}
           </li>
         ))}
       </ol>
@@ -41,7 +42,7 @@ export function ResourceLedger({ items }: { items: ResourceLink[] }) {
   return (
     <div className="resource-ledger">
       {items.map((item) => (
-        <Link href={item.href} className="resource-ledger-row" key={item.href}>
+        <a href={item.href} className="resource-ledger-row" key={item.href}>
           <span className="resource-ledger-type">{item.type}</span>
           <span>
             <strong>{item.title}</strong>
@@ -51,7 +52,7 @@ export function ResourceLedger({ items }: { items: ResourceLink[] }) {
             {item.meta && <small>{item.meta}</small>}
             <ArrowRight size={17} aria-hidden="true" />
           </span>
-        </Link>
+        </a>
       ))}
     </div>
   );

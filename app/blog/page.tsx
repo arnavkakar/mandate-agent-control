@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Breadcrumbs, ResourceLayout, ResourceLedger } from "../resource-shell";
 
@@ -42,10 +41,10 @@ export default function BlogPage() {
           <h1>Writing about authority before autonomy.</h1>
           <p>Notes on agentic commerce, deterministic controls, human accountability, and the infrastructure required when software can act.</p>
         </header>
-        <Link className="blog-feature" href={posts[0].href}>
+        <a className="blog-feature" href={posts[0].href}>
           <div><h2>{posts[0].title}</h2><p>{posts[0].description}</p></div>
           <span>Read the essay <ArrowRight size={17} /></span>
-        </Link>
+        </a>
         <section className="blog-latest">
           <div className="resource-section-head"><h2>Latest writing</h2><p>Foundational pieces first. New posts will expand only when they add evidence or a distinct operating lesson.</p></div>
           <ResourceLedger items={posts} />

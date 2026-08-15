@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArrowRight, BookOpen, FileText, HelpCircle, ShieldCheck } from "lucide-react";
 import { ResourceLayout, ResourceLedger } from "../resource-shell";
 
@@ -85,18 +84,18 @@ export default function ResourcesPage() {
             <h1>The field guide to controlled agentic commerce.</h1>
             <p>Understand what changes when software can buy, where authorization belongs, and how Mandate keeps humans and deterministic rules in control.</p>
           </div>
-          <Link href="/learn/agentic-commerce" className="resource-feature-link">
+          <a href="/learn/agentic-commerce" className="resource-feature-link">
             <BookOpen size={22} aria-hidden="true" />
             <span><small>Start here</small><strong>How agentic commerce works</strong></span>
             <ArrowRight size={20} aria-hidden="true" />
-          </Link>
+          </a>
         </header>
 
         <nav className="resource-index-band" aria-label="Resource sections">
           <a href="#foundations"><BookOpen size={17} /> Foundations <span>02</span></a>
           <a href="#product-reference"><ShieldCheck size={17} /> Product reference <span>02</span></a>
           <a href="#editorial"><FileText size={17} /> Editorial <span>03</span></a>
-          <Link href="/faq"><HelpCircle size={17} /> FAQs <span>24</span></Link>
+          <a href="/faq"><HelpCircle size={17} /> FAQs <span>24</span></a>
         </nav>
 
         <section className="resource-section" id="foundations">

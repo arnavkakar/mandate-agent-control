@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArticleShell } from "../../resource-shell";
 
 export const metadata: Metadata = {
@@ -28,7 +27,7 @@ export default function AuditableRequestPost() {
       <section><h2>Record the request as facts</h2><p>For a $96 Notion renewal, store the requesting agent, normalized amount and currency, merchant identity, category, country, merchant-novelty state, request time, and idempotency key. The raw agent explanation can provide context, but it should not substitute for the fields the policy engine actually evaluated.</p><p>Idempotency matters because agents retry. A repeated network request should retrieve the original result, not consume the budget twice or create two approval records.</p></section>
       <section><h2>Keep policy evidence and risk evidence separate</h2><p>The policy trace might say the agent is active, the mandate is current, $1,904 remains, software is allowed, and $96 is below the autonomous threshold. The risk trace might note that Notion is a known merchant and the amount matches prior behavior.</p><p>These are different claims. Policy establishes permission; risk asks whether eligible behavior deserves additional scrutiny. Storing them separately prevents a single opaque score from hiding which business rule mattered.</p></section>
       <section><h2>Append the human action</h2><p>For an $899 Apple request, policy could return APPROVAL_REQUIRED because the amount exceeds the autonomous limit and the merchant is new. If a reviewer approves it, save the reviewer, optional note, time, and scope of that approval. “Approve once” should mean this request only—not a silent merchant allowlist change.</p><p>The original result remains. The human action is a later, explicit resolution. That distinction is what lets an auditor answer both “what did the system decide?” and “what did the person decide afterward?”</p></section>
-      <section><h2>Make the evidence usable</h2><p>A hash-linked event log can make tampering more evident, but a useful interface must also translate identifiers and payloads into a readable sequence. Operators need the merchant, amount, agent, exact rule rows, risk factors, policy version, and actor—not just a digest.</p><p>The <Link href="/knowledge#audit">audit-evidence reference</Link> describes Mandate’s current MVP boundary and what production maturity would add.</p></section>
+      <section><h2>Make the evidence usable</h2><p>A hash-linked event log can make tampering more evident, but a useful interface must also translate identifiers and payloads into a readable sequence. Operators need the merchant, amount, agent, exact rule rows, risk factors, policy version, and actor—not just a digest.</p><p>The <a href="/knowledge#audit">audit-evidence reference</a> describes Mandate’s current MVP boundary and what production maturity would add.</p></section>
     </ArticleShell>
   );
 }

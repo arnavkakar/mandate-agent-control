@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Breadcrumbs, ResourceLayout } from "../resource-shell";
 
 export const metadata: Metadata = {
@@ -109,7 +108,7 @@ export default function FAQPage() {
             })}
           </div>
         </div>
-        <aside className="faq-next"><strong>Need the connected story?</strong><p>Read <Link href="/learn/agentic-commerce">the practical guide to agentic commerce</Link> or browse the <Link href="/knowledge">Mandate knowledge base</Link>.</p></aside>
+        <aside className="faq-next"><strong>Need the connected story?</strong><p>Read <a href="/learn/agentic-commerce">the practical guide to agentic commerce</a> or browse the <a href="/knowledge">Mandate knowledge base</a>.</p></aside>
       </article>
     </ResourceLayout>
   );

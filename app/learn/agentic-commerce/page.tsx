@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArticleShell } from "../../resource-shell";
 
 export const metadata: Metadata = {
@@ -81,7 +80,7 @@ export default function AgenticCommerceGuide() {
             <li>Use idempotency and budget reservations to prevent duplicate or concurrent overspend.</li>
             <li>Keep payment credentials outside the agent and authorization model whenever possible.</li>
           </ul>
-          <p>Continue with the <Link href="/knowledge">Mandate knowledge base</Link> for the product vocabulary or review the <Link href="/faq">frequently asked questions</Link>.</p>
+          <p>Continue with the <a href="/knowledge">Mandate knowledge base</a> for the product vocabulary or review the <a href="/faq">frequently asked questions</a>.</p>
         </section>
       </ArticleShell>
   );

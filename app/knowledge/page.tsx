@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Breadcrumbs, ResourceLayout } from "../resource-shell";
 
 export const metadata: Metadata = {
@@ -87,7 +86,7 @@ export default function KnowledgePage() {
 
             <aside className="knowledge-next">
               <strong>Need the complete journey?</strong>
-              <p>Read <Link href="/learn/agentic-commerce">How agentic commerce works</Link>, or use the <Link href="/faq">FAQ</Link> for shorter answers.</p>
+              <p>Read <a href="/learn/agentic-commerce">How agentic commerce works</a>, or use the <a href="/faq">FAQ</a> for shorter answers.</p>
             </aside>
           </div>
         </div>

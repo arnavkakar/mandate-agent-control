@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ArrowRight,
   Bot,
@@ -110,9 +109,9 @@ export default function MarketingHome() {
             reason trail.
           </p>
           <div className="marketing-hero-actions">
-            <Link className="marketing-primary" href="/console">
+            <a className="marketing-primary" href="/console">
               Create a workspace <ArrowRight size={17} />
-            </Link>
+            </a>
             <a className="marketing-secondary" href="#decision-trace">
               See a decision trace
             </a>
@@ -330,9 +329,9 @@ export default function MarketingHome() {
           <h2>Give your agents boundaries before you give them a budget.</h2>
           <p>Create a workspace, define one mandate, and test the full decision path in simulation.</p>
         </div>
-        <Link className="marketing-primary" href="/console">
+        <a className="marketing-primary" href="/console">
           Create a workspace <ArrowRight size={17} />
-        </Link>
+        </a>
       </section>
 
       <PublicFooter />

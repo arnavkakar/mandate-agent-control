@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ArticleShell } from "../../resource-shell";
 
 export const metadata: Metadata = {
@@ -28,7 +27,7 @@ export default function RiskPolicyPost() {
       <section><h2>Risk answers scrutiny</h2><p>An eligible request can still look unusual. It may involve a new merchant, an amount far above the agent’s normal pattern, rapid repeated requests, a category that does not match its purpose, or a country outside expected activity. Those signals are useful because policy cannot anticipate every operational pattern.</p><p>The safe response is escalation: return APPROVAL_REQUIRED and show the factors to a person. The reviewer can assess context without pretending the signal was a deterministic rule.</p></section>
       <section><h2>Opaque scores create false confidence</h2><p>“Risk 46” is not self-explanatory. Operators need the band definition, triggered factors, source window, and limitations. Otherwise a precise-looking number can carry more authority than its evidence deserves.</p><p>Mandate’s MVP therefore returns a score together with named factors. It does not claim a calibrated fraud model or use synthetic statistics when a workspace has no transaction history.</p></section>
       <section><h2>A monotonic control model</h2><p>Think of authorization as a one-way gate. Policy can approve, require review, or decline. Risk can leave an eligible request unchanged or move it toward more review. It cannot move a declined request toward approval. Human action can resolve a queued request, but it does not rewrite the original policy result.</p><p>This monotonic structure is easier to test and explain than a blended model where dozens of weighted signals can offset a hard business prohibition.</p></section>
-      <section><h2>Design the interface around evidence</h2><p>Show the exact policy rows first, the risk factors second, and the final outcome clearly. For queued requests, keep budget impact, merchant novelty, failed or review-triggering rules, and reviewer scope visible beside the action.</p><p>Read the <Link href="/knowledge#decisions">authorization-decision reference</Link> for the three-state model.</p></section>
+      <section><h2>Design the interface around evidence</h2><p>Show the exact policy rows first, the risk factors second, and the final outcome clearly. For queued requests, keep budget impact, merchant novelty, failed or review-triggering rules, and reviewer scope visible beside the action.</p><p>Read the <a href="/knowledge#decisions">authorization-decision reference</a> for the three-state model.</p></section>
     </ArticleShell>
   );
 }
