@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "knowledge",
     "faq",
     "blog",
+    "compare",
     "security",
     "privacy",
     "terms",

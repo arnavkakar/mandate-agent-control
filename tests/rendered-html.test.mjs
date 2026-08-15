@@ -71,6 +71,7 @@ test("publishes the resource center and substantive learning routes",async()=>{
   ["/blog/how-to-set-spending-limits-for-ai-agents",/Start with a narrow job/i],
   ["/blog/prompt-injection-and-ai-agent-payments",/Assume the model can be manipulated/i],
   ["/blog/what-is-an-ai-agent-payment-mandate",/versioned set of rules/i],
+  ["/compare",/Mandate, Skyfire, Stripe Issuing, and Ramp compared/i],
  ]){
   const response=await renderPath(path);
   assert.equal(response.status,200);
@@ -86,6 +87,21 @@ test("publishes the resource center and substantive learning routes",async()=>{
  assert.match(xml,/blog\/how-to-set-spending-limits-for-ai-agents/i);
  assert.match(xml,/blog\/prompt-injection-and-ai-agent-payments/i);
  assert.match(xml,/blog\/what-is-an-ai-agent-payment-mandate/i);
+ assert.match(xml,/<loc>https:\/\/mandate-agent\.com\/compare<\/loc>/i);
+});
+
+test("publishes a sourced and balanced competitor comparison",async()=>{
+ const response=await renderPath("/compare");
+ assert.equal(response.status,200);
+ const html=await response.text();
+ for(const product of ["Mandate","Skyfire","Stripe Issuing","Ramp"]) assert.match(html,new RegExp(product,"i"));
+ assert.match(html,/published by Mandate/i);
+ assert.match(html,/official product pages and documentation/i);
+ assert.match(html,/https:\/\/docs\.skyfire\.xyz/i);
+ assert.match(html,/https:\/\/stripe\.com\/issuing/i);
+ assert.match(html,/https:\/\/agents\.ramp\.com/i);
+ assert.match(html,/"@type":"ItemList"/i);
+ assert.doesNotMatch(html,/better than|worst|inferior/i);
 });
 
 test("publishes crawl policy and complete article SEO",async()=>{

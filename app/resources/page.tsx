@@ -36,6 +36,13 @@ const foundations = [
 
 const productReferences = [
   {
+    href: "/compare",
+    title: "AI-agent payment platforms compared",
+    description: "Compare Mandate with Skyfire, Stripe Issuing, and Ramp by layer, controls, execution, approvals, and evidence.",
+    type: "Comparison",
+    meta: "4 products",
+  },
+  {
     href: "/knowledge",
     title: "Mandate knowledge base",
     description: "A working reference for authorization decisions, spending mandates, scoped credentials, risk escalation, and audit records.",
@@ -93,7 +100,7 @@ export default function ResourcesPage() {
 
         <nav className="resource-index-band" aria-label="Resource sections">
           <a href="#foundations"><BookOpen size={17} /> Foundations <span>02</span></a>
-          <a href="#product-reference"><ShieldCheck size={17} /> Product reference <span>02</span></a>
+          <a href="#product-reference"><ShieldCheck size={17} /> Product reference <span>03</span></a>
           <a href="#editorial"><FileText size={17} /> Editorial <span>03</span></a>
           <a href="/faq"><HelpCircle size={17} /> FAQs <span>24</span></a>
         </nav>

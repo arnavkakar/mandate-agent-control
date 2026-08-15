@@ -15,6 +15,7 @@ export function PublicHeader() {
       <div className="marketing-nav-links">
         <a href="/">Home</a>
         <a href="/#how-it-works">How it works</a>
+        <a href="/compare">Compare</a>
         <details className="marketing-learn-menu">
           <summary>
             Learn <ChevronDown size={15} aria-hidden="true" />
@@ -54,6 +55,7 @@ export function PublicHeader() {
             <span>Product</span>
             <a href="/">Home</a>
             <a href="/#how-it-works">How it works</a>
+            <a href="/compare">Compare</a>
             <a href="/security">Security</a>
           </div>
           <div className="public-nav-group">
@@ -80,12 +82,13 @@ export function PublicFooter() {
         </span>
         <span>mandate</span>
       </a>
-      <p>Deterministic authorization controls for simulated AI-agent payments. Updated August 14, 2026.</p>
+      <p>Deterministic authorization controls for AI-agent payments. Updated August 15, 2026.</p>
       <div className="public-footer-links">
         <div>
           <strong>Product</strong>
           <a href="/">Home</a>
           <a href="/#how-it-works">How it works</a>
+          <a href="/compare">Compare</a>
           <a href="/security">Security</a>
           <a href="/console">Console</a>
         </div>
