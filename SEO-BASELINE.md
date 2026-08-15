@@ -12,7 +12,7 @@ This baseline records measured production behavior, not projections. The authent
 | --- | ---: | --- |
 | Schema | 100/100 | Valid JSON-LD graph with `Organization`, `WebSite`, `WebPage`, and `SoftwareApplication` |
 | Sitemap | 100/100 | Four canonical, indexable, 200-status URLs; referenced by `robots.txt` |
-| GEO / AI search readiness | 63/100 | AI search crawlers allowed, substantive `llms.txt`, structured data, and a 138-word answer-first definition |
+| GEO / AI search readiness | 74/100 | AI search crawlers allowed, substantive `llms.txt`, structured data, a visible update signal, and a 138-word answer-first definition |
 | Performance heuristic | 35/100 | Heuristic only; real PageSpeed/CrUX data was unavailable and this score must not be presented as field performance |
 
 The performance tool estimated LCP 2.48s, INP 500ms, and CLS 0.03 from deterministic lab heuristics. These are not real-user measurements. Obtain PageSpeed Insights and CrUX evidence after the domain has accumulated sufficient traffic.
