@@ -68,6 +68,9 @@ test("publishes the resource center and substantive learning routes",async()=>{
   ["/blog/agentic-commerce-needs-separation-of-powers",/Delegated action needs an independent authorization boundary/i],
   ["/blog/from-user-intent-to-auditable-purchase-request",/useful unit is a trace/i],
   ["/blog/risk-scores-should-not-override-policy",/Risk may make an eligible request more restrictive/i],
+  ["/blog/how-to-set-spending-limits-for-ai-agents",/Start with a narrow job/i],
+  ["/blog/prompt-injection-and-ai-agent-payments",/Assume the model can be manipulated/i],
+  ["/blog/what-is-an-ai-agent-payment-mandate",/versioned set of rules/i],
  ]){
   const response=await renderPath(path);
   assert.equal(response.status,200);
@@ -80,6 +83,34 @@ test("publishes the resource center and substantive learning routes",async()=>{
  const xml=await sitemap.text();
  assert.match(xml,/learn\/agentic-commerce/i);
  assert.match(xml,/blog\/risk-scores-should-not-override-policy/i);
+ assert.match(xml,/blog\/how-to-set-spending-limits-for-ai-agents/i);
+ assert.match(xml,/blog\/prompt-injection-and-ai-agent-payments/i);
+ assert.match(xml,/blog\/what-is-an-ai-agent-payment-mandate/i);
+});
+
+test("publishes crawl policy and complete article SEO",async()=>{
+ const robots=await renderPath("/robots.txt");
+ assert.equal(robots.status,200);
+ const policy=await robots.text();
+ assert.match(policy,/User-Agent: \*/i);
+ assert.match(policy,/Disallow: \/console/i);
+ assert.match(policy,/Sitemap: https:\/\/mandate-agent\.com\/sitemap\.xml/i);
+ for(const slug of [
+  "agentic-commerce-needs-separation-of-powers",
+  "from-user-intent-to-auditable-purchase-request",
+  "risk-scores-should-not-override-policy",
+  "how-to-set-spending-limits-for-ai-agents",
+  "prompt-injection-and-ai-agent-payments",
+  "what-is-an-ai-agent-payment-mandate",
+ ]){
+  const response=await renderPath(`/blog/${slug}`);
+  assert.equal(response.status,200);
+  const html=await response.text();
+  assert.match(html,/By (?:<!-- -->)?Arnav Kakar/i);
+  assert.match(html,/"@type":"BlogPosting"/i);
+  assert.match(html,/"@type":"Person","name":"Arnav Kakar"/i);
+  assert.match(html,new RegExp(`rel="canonical" href="https://mandate-agent\\.com/blog/${slug}"`,`i`));
+ }
 });
 
 test("ships the authorization data model and safety thesis",async()=>{

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { ArticleShell } from "../../resource-shell";
+import { BLOG_AUTHOR } from "../posts";
 
 export const metadata: Metadata = {
   title: "From User Intent to an Auditable Purchase Request",
-  description: "A concrete trace of the identities, rules, facts, decisions, and resolutions required for explainable agent purchasing.",
+  description: "Follow the identities, policy versions, transaction facts, decisions, and human resolutions required for auditable AI-agent purchasing.",
   alternates: { canonical: "/blog/from-user-intent-to-auditable-purchase-request" },
+  authors: [{ name: BLOG_AUTHOR }],
+  openGraph: { type: "article", url: "/blog/from-user-intent-to-auditable-purchase-request", title: "From user intent to an auditable purchase request", description: "The evidence chain required to make an AI-agent purchase decision explainable.", publishedTime: "2026-08-14", authors: [BLOG_AUTHOR] },
 };
 
 export default function AuditableRequestPost() {
@@ -15,6 +18,7 @@ export default function AuditableRequestPost() {
       description="An audit trail becomes useful only when it preserves the chain of authority—not merely a timestamp and a final status."
       date="August 14, 2026"
       datePublished="2026-08-14"
+      author={BLOG_AUTHOR}
       canonical="/blog/from-user-intent-to-auditable-purchase-request"
       readingTime="6 minute read"
       related={[

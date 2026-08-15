@@ -2494,6 +2494,7 @@ body:has(.marketing-shell) {
 .blog-feature span { color: #d9b45f; font: 700 11px var(--font-mono), monospace; }
 .blog-feature h2 { margin: 0; font-size: clamp(35px, 5vw, 62px); line-height: 1.02; letter-spacing: -.038em; text-wrap: balance; }
 .blog-feature p { max-width: 650px; margin: 20px 0 0; color: #bdc8c3; font-size: 16px; }
+.blog-feature > div > small { display: block; margin-top: 20px; color: #d9b45f; font: 700 11px/1.5 var(--font-mono), monospace; }
 .blog-feature > span { display: inline-flex; align-items: center; gap: 9px; color: #f8f6ef; font-family: var(--font-sans), sans-serif; font-size: 13px; }
 .blog-latest { padding-top: 86px; }
 

@@ -8,6 +8,9 @@ const llmsText = `# Mandate
 - [Knowledge Base](https://mandate-agent.com/knowledge): Agents, mandates, decisions, risk, API keys, and audit evidence.
 - [FAQs](https://mandate-agent.com/faq): Plain-language answers about agentic commerce and Mandate.
 - [Blog](https://mandate-agent.com/blog): Essays about authority, risk, and accountable agent action.
+- [AI-agent payment mandates](https://mandate-agent.com/blog/what-is-an-ai-agent-payment-mandate): Definition, lifecycle, rules, credentials, and audit evidence.
+- [AI-agent spending limits](https://mandate-agent.com/blog/how-to-set-spending-limits-for-ai-agents): Practical least-privilege policy design.
+- [Prompt injection and agent payments](https://mandate-agent.com/blog/prompt-injection-and-ai-agent-payments): Security boundaries for untrusted instructions and cost abuse.
 - [Security](https://mandate-agent.com/security): Trust boundaries, prompt-injection position, and implemented controls.
 - [Privacy](https://mandate-agent.com/privacy): Data collection and processing disclosure.
 - [Terms](https://mandate-agent.com/terms): Simulation boundary and acceptable use.

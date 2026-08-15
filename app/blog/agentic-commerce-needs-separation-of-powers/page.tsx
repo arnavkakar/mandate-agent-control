@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { ArticleShell } from "../../resource-shell";
+import { BLOG_AUTHOR } from "../posts";
 
 export const metadata: Metadata = {
   title: "Agentic Commerce Needs a Separation of Powers",
-  description: "Why the model interpreting a purchase request should never be the system granting financial authority.",
+  description: "Learn why AI-agent commerce needs separation between model interpretation, deterministic authorization, and accountable human approval.",
   alternates: { canonical: "/blog/agentic-commerce-needs-separation-of-powers" },
+  authors: [{ name: BLOG_AUTHOR }],
+  openGraph: { type: "article", url: "/blog/agentic-commerce-needs-separation-of-powers", title: "Agentic commerce needs a separation of powers", description: "Why model interpretation, deterministic authorization, and human approval must remain separate.", publishedTime: "2026-08-14", authors: [BLOG_AUTHOR] },
 };
 
 export default function SeparationOfPowersPost() {
@@ -15,6 +18,7 @@ export default function SeparationOfPowersPost() {
       description="The model can understand what a person means. That does not make it the right place to decide what the person is financially allowed to do."
       date="August 14, 2026"
       datePublished="2026-08-14"
+      author={BLOG_AUTHOR}
       canonical="/blog/agentic-commerce-needs-separation-of-powers"
       readingTime="7 minute read"
       related={[

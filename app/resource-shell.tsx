@@ -64,6 +64,7 @@ export function ArticleShell({
   description,
   date,
   datePublished,
+  author,
   canonical,
   readingTime,
   children,
@@ -74,6 +75,7 @@ export function ArticleShell({
   description: string;
   date: string;
   datePublished: string;
+  author: string;
   canonical: string;
   readingTime: string;
   children: ReactNode;
@@ -87,7 +89,7 @@ export function ArticleShell({
     description,
     datePublished,
     dateModified: datePublished,
-    author: { "@type": "Organization", name: "Mandate", url: "https://mandate-agent.com" },
+    author: { "@type": "Person", name: author },
     publisher: { "@type": "Organization", name: "Mandate", url: "https://mandate-agent.com" },
     mainEntityOfPage: `https://mandate-agent.com${canonical}`,
   };
@@ -99,7 +101,7 @@ export function ArticleShell({
         <header className="editorial-head">
           <h1>{title}</h1>
           <strong>{description}</strong>
-          <div><time dateTime={date}>{date}</time><span><Clock3 size={14} /> {readingTime}</span></div>
+          <div><span>By {author}</span><time dateTime={datePublished}>{date}</time><span><Clock3 size={14} aria-hidden="true" /> {readingTime}</span></div>
         </header>
         <div className="editorial-grid">
           <aside className="editorial-aside" aria-label="On this page">

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { ArticleShell } from "../../resource-shell";
+import { BLOG_AUTHOR } from "../posts";
 
 export const metadata: Metadata = {
   title: "Risk Scores Should Not Override Policy",
-  description: "Why probabilistic risk signals should escalate eligible agent requests but never erase a hard authorization boundary.",
+  description: "Learn why probabilistic risk signals may escalate eligible AI-agent requests but must never erase a hard authorization boundary.",
   alternates: { canonical: "/blog/risk-scores-should-not-override-policy" },
+  authors: [{ name: BLOG_AUTHOR }],
+  openGraph: { type: "article", url: "/blog/risk-scores-should-not-override-policy", title: "Risk scores should not override policy", description: "Why risk may escalate an eligible request but cannot manufacture financial authority.", publishedTime: "2026-08-14", authors: [BLOG_AUTHOR] },
 };
 
 export default function RiskPolicyPost() {
@@ -15,6 +18,7 @@ export default function RiskPolicyPost() {
       description="A risk score is a reason to look closer. It is not a substitute for the explicit financial authority a person granted."
       date="August 14, 2026"
       datePublished="2026-08-14"
+      author={BLOG_AUTHOR}
       canonical="/blog/risk-scores-should-not-override-policy"
       readingTime="5 minute read"
       related={[
