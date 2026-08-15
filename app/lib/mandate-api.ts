@@ -1,6 +1,7 @@
 export const MANDATE_API_URL =
   process.env.NEXT_PUBLIC_MANDATE_API_URL ??
   "https://mandate-agent-control-production.up.railway.app";
+const DASHBOARD_API_URL = "/api/mandate";
 
 export type Session = {
   token: string;
@@ -71,18 +72,9 @@ export type AuditEvent={id:string;sequence:number;eventType:string;actorType:str
 export type AuditVerification={valid:boolean;checked:number;headHash?:string|null;verifiedAt?:string;brokenAtSequence?:number};
 export type AuthorizationResponse={transaction:{id:string;amountCents:number;merchant:string;category:string;country:string;createdAt:string};decision:{decision:"APPROVED"|"APPROVAL_REQUIRED"|"DECLINED";reasons:string[];policyRules:ApiTransaction["policyRules"];riskScore:number;riskFactors:ApiTransaction["riskFactors"]};replayed:boolean};
 
-const SESSION_KEY = "mandate.session.v1";
-
-export function loadSession(): Session | null {
-  if (typeof window === "undefined") return null;
-  try { return JSON.parse(window.localStorage.getItem(SESSION_KEY) ?? "null") as Session | null; }
-  catch { return null; }
-}
-
-export function saveSession(session: Session | null) {
-  if (typeof window === "undefined") return;
-  if (session) window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  else window.localStorage.removeItem(SESSION_KEY);
+export function clearLegacySession() {
+  if (typeof window !== "undefined")
+    window.localStorage.removeItem("mandate.session.v1");
 }
 
 export class MandateApiError extends Error {
@@ -92,11 +84,11 @@ export class MandateApiError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
-  const response = await fetch(`${MANDATE_API_URL}${path}`, {
+  const response = await fetch(`${DASHBOARD_API_URL}${path}`, {
     ...init,
+    credentials: "same-origin",
     headers: {
       ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init.headers,
     },
   });
@@ -119,6 +111,7 @@ export const mandateApi = {
   login(input: { email: string; password: string }) {
     return request<Session>("/v1/auth/login", { method: "POST", body: JSON.stringify(input) });
   },
+  logout() { return request<{ ok: true }>("/v1/auth/logout", { method: "POST", body: "{}" }); },
   me(token: string) { return request<Omit<Session, "token">>("/v1/me", {}, token); },
   agents(token: string) { return request<ApiAgent[]>("/v1/agents", {}, token); },
   createAgent(token: string, input: { name: string; purpose: string }) { return request<ApiAgent>("/v1/agents", { method: "POST", body: JSON.stringify(input) }, token); },

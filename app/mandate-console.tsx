@@ -56,12 +56,11 @@ import {
 import {
   ApiAgent,
   ApiTransaction,
+  clearLegacySession,
   DashboardSummary,
-  loadSession,
   mandateApi,
   MandateApiError,
   MANDATE_API_URL,
-  saveSession,
   Session,
 } from "./lib/mandate-api";
 import { copyText } from "./lib/clipboard";
@@ -416,12 +415,15 @@ export default function Home() {
   const [sessionReady, setSessionReady] = useState(false);
   const [authNotice, setAuthNotice] = useState("");
   useEffect(() => {
-    setSession(loadSession());
-    setSessionReady(true);
+    clearLegacySession();
+    mandateApi
+      .me("")
+      .then((current) => setSession({ token: "cookie-session", ...current }))
+      .catch(() => setSession(null))
+      .finally(() => setSessionReady(true));
   }, []);
   useEffect(() => {
     const expire = () => {
-      saveSession(null);
       setSession(null);
       setAuthNotice("Your session expired. Sign in again to continue.");
     };
@@ -435,7 +437,6 @@ export default function Home() {
       <AuthPage
         notice={authNotice}
         onAuthenticated={(next) => {
-          saveSession(next);
           setSession(next);
           setAuthNotice("");
         }}
@@ -444,8 +445,8 @@ export default function Home() {
   return (
     <Workspace
       session={session}
-      onLogout={() => {
-        saveSession(null);
+      onLogout={async () => {
+        await mandateApi.logout().catch(() => undefined);
         setSession(null);
         setAuthNotice("");
       }}
@@ -675,7 +676,7 @@ function Workspace({
   onLogout,
 }: {
   session: Session;
-  onLogout: () => void;
+  onLogout: () => Promise<void>;
 }) {
   const [view, setView] = useState<View>("Overview");
   const [transactions, setTransactions] = useState<Tx[]>([]);
@@ -731,7 +732,7 @@ function Workspace({
         setSimAgent(agentRows[0].name);
     } catch (cause) {
       if (cause instanceof MandateApiError && cause.status === 401) {
-        onLogout();
+        void onLogout();
         return;
       }
       setLoadError("Live workspace data could not be loaded. Try again.");
@@ -891,7 +892,7 @@ function Workspace({
           <button
             className="profile"
             aria-label={`Sign out ${session.user?.name || "workspace owner"}`}
-            onClick={onLogout}
+            onClick={() => void onLogout()}
           >
             <div className="avatar">
               {session.user?.name

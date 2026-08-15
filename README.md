@@ -99,6 +99,8 @@ Mandate treats agent requests, browser input, and language-model output as untru
 - Request bodies, metadata, text, credentials, and financial values have explicit type and size limits. Database connections have connection, statement, lock, and idle-transaction timeouts.
 - Approval rows and spend budgets are locked transactionally; idempotency keys prevent duplicate agent requests; audit-chain appends are serialized per organization.
 - API responses use restrictive browser security headers and are never cached. CORS and explicit Origin enforcement use `CORS_ORIGIN` as an allowlist.
+- Dashboard authentication is mediated by a same-origin backend-for-frontend route. The signed session stays in a Secure, HttpOnly, SameSite cookie; browser JavaScript receives no reusable bearer token, and cross-site state-changing requests are rejected before proxying.
+- CI runs lint, type checks, security regressions, production builds, and dependency advisories. Dependabot checks the production dependency graph weekly.
 
 Application rate limits reduce brute force, cost abuse, and ordinary request floods, but they are not volumetric DDoS protection. Railway protects network layer 4 and below but recommends a WAF such as Cloudflare for application-layer attacks. Before broad public launch, proxy `mandate-agent.com` through Cloudflare, enable its managed WAF/DDoS protection and rate-limit the API paths at the edge, while keeping Railway as the origin.
 
@@ -113,7 +115,6 @@ Operational requirements:
 ## Remaining hardening roadmap
 
 - Password email verification, password reset, MFA, enterprise SSO, session revocation, and audit-log export to immutable object storage.
-- Replace browser local-storage bearer sessions with Secure, HttpOnly, SameSite cookies and CSRF protection.
 - Distributed edge or Redis-backed rate limiting for multi-replica deployments, plus bot management and alerting.
 - Webhook signing, retry queues, dead-letter handling, and key rotation UX.
 - Configurable velocity windows, historical baselines, alerting, and risk calibration.
