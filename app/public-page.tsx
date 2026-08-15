@@ -1,6 +1,6 @@
 /* Native anchors are intentional: Vinext's next/link prefetch runtime currently breaks public navigation. */
 /* eslint-disable @next/next/no-html-link-for-pages */
-import { ArrowRight, LockKeyhole, Menu } from "lucide-react";
+import { ArrowRight, ChevronDown, LockKeyhole, Menu } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function PublicHeader() {
@@ -13,9 +13,35 @@ export function PublicHeader() {
         <span>mandate</span>
       </a>
       <div className="marketing-nav-links">
-        <a href="/learn/agentic-commerce">Agentic commerce</a>
-        <a href="/resources">Resources</a>
-        <a href="/blog">Blog</a>
+        <a href="/">Home</a>
+        <a href="/#how-it-works">How it works</a>
+        <details className="marketing-learn-menu">
+          <summary>
+            Learn <ChevronDown size={15} aria-hidden="true" />
+          </summary>
+          <div>
+            <a href="/learn/agentic-commerce">
+              <strong>Agentic commerce</strong>
+              <span>Understand the purchasing model</span>
+            </a>
+            <a href="/resources">
+              <strong>Resource center</strong>
+              <span>Guides, explainers, and references</span>
+            </a>
+            <a href="/knowledge">
+              <strong>Knowledge base</strong>
+              <span>Product concepts and terminology</span>
+            </a>
+            <a href="/faq">
+              <strong>FAQs</strong>
+              <span>Answers to common questions</span>
+            </a>
+            <a href="/blog">
+              <strong>Blog</strong>
+              <span>Analysis and product thinking</span>
+            </a>
+          </div>
+        </details>
         <a href="/security">Security</a>
         <a className="marketing-nav-cta" href="/console">
           Open console
@@ -23,14 +49,22 @@ export function PublicHeader() {
       </div>
       <details className="public-nav-menu">
         <summary><Menu size={18} aria-hidden="true" /> Menu</summary>
-        <div>
-          <a href="/learn/agentic-commerce">Agentic commerce</a>
-          <a href="/resources">Resources</a>
-          <a href="/knowledge">Knowledge base</a>
-          <a href="/faq">FAQs</a>
-          <a href="/blog">Blog</a>
-          <a href="/security">Security</a>
-          <a href="/console">Open console</a>
+        <div className="public-nav-panel">
+          <div className="public-nav-group">
+            <span>Product</span>
+            <a href="/">Home</a>
+            <a href="/#how-it-works">How it works</a>
+            <a href="/security">Security</a>
+          </div>
+          <div className="public-nav-group">
+            <span>Learn</span>
+            <a href="/learn/agentic-commerce">Agentic commerce</a>
+            <a href="/resources">Resource center</a>
+            <a href="/knowledge">Knowledge base</a>
+            <a href="/faq">FAQs</a>
+            <a href="/blog">Blog</a>
+          </div>
+          <a className="public-nav-console" href="/console">Open console</a>
         </div>
       </details>
     </nav>
@@ -47,15 +81,28 @@ export function PublicFooter() {
         <span>mandate</span>
       </a>
       <p>Deterministic authorization controls for simulated AI-agent payments. Updated August 14, 2026.</p>
-      <div>
-        <a href="/resources">Resources</a>
-        <a href="/knowledge">Knowledge</a>
-        <a href="/faq">FAQs</a>
-        <a href="/blog">Blog</a>
-        <a href="/security">Security</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-        <a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a>
+      <div className="public-footer-links">
+        <div>
+          <strong>Product</strong>
+          <a href="/">Home</a>
+          <a href="/#how-it-works">How it works</a>
+          <a href="/security">Security</a>
+          <a href="/console">Console</a>
+        </div>
+        <div>
+          <strong>Learn</strong>
+          <a href="/learn/agentic-commerce">Agentic commerce</a>
+          <a href="/resources">Resources</a>
+          <a href="/knowledge">Knowledge base</a>
+          <a href="/faq">FAQs</a>
+          <a href="/blog">Blog</a>
+        </div>
+        <div>
+          <strong>Company</strong>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a>
+        </div>
       </div>
     </footer>
   );
