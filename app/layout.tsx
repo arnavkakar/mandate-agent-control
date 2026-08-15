@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/newsreader";
 import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";

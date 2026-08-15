@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, LockKeyhole } from "lucide-react";
+import { ArrowRight, LockKeyhole, Menu } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function PublicHeader() {
@@ -12,14 +12,26 @@ export function PublicHeader() {
         <span>mandate</span>
       </Link>
       <div className="marketing-nav-links">
-        <Link href="/#how-it-works">How it works</Link>
-        <Link href="/#controls">Controls</Link>
-        <Link href="/#api">API</Link>
+        <Link href="/learn/agentic-commerce">Agentic commerce</Link>
+        <Link href="/resources">Resources</Link>
+        <Link href="/blog">Blog</Link>
         <Link href="/security">Security</Link>
         <Link className="marketing-nav-cta" href="/console">
           Open console
         </Link>
       </div>
+      <details className="public-nav-menu">
+        <summary><Menu size={18} aria-hidden="true" /> Menu</summary>
+        <div>
+          <Link href="/learn/agentic-commerce">Agentic commerce</Link>
+          <Link href="/resources">Resources</Link>
+          <Link href="/knowledge">Knowledge base</Link>
+          <Link href="/faq">FAQs</Link>
+          <Link href="/blog">Blog</Link>
+          <Link href="/security">Security</Link>
+          <Link href="/console">Open console</Link>
+        </div>
+      </details>
     </nav>
   );
 }
@@ -33,8 +45,12 @@ export function PublicFooter() {
         </span>
         <span>mandate</span>
       </Link>
-      <p>Deterministic authorization controls for simulated AI-agent payments.</p>
+      <p>Deterministic authorization controls for simulated AI-agent payments. Updated August 14, 2026.</p>
       <div>
+        <Link href="/resources">Resources</Link>
+        <Link href="/knowledge">Knowledge</Link>
+        <Link href="/faq">FAQs</Link>
+        <Link href="/blog">Blog</Link>
         <Link href="/security">Security</Link>
         <Link href="/privacy">Privacy</Link>
         <Link href="/terms">Terms</Link>

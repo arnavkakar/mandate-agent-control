@@ -13,6 +13,7 @@ import {
   UserCheck,
   XCircle,
 } from "lucide-react";
+import { PublicFooter, PublicHeader } from "./public-page";
 
 const decisionChecks = [
   ["Agent status", "Active", "pass"],
@@ -90,24 +91,7 @@ export default function MarketingHome() {
         Skip to content
       </a>
 
-      <nav className="marketing-nav" aria-label="Main navigation">
-        <Link className="marketing-brand" href="/" aria-label="Mandate home">
-          <span className="marketing-brand-mark" aria-hidden="true">
-            <LockKeyhole size={18} />
-          </span>
-          <span>mandate</span>
-        </Link>
-        <div className="marketing-nav-links">
-          <a href="#how-it-works">How it works</a>
-          <a href="#controls">Controls</a>
-          <a href="#api">API</a>
-          <Link href="/security">Security</Link>
-          <Link href="/console">Sign in</Link>
-          <Link className="marketing-nav-cta" href="/console">
-            Create workspace
-          </Link>
-        </div>
-      </nav>
+      <PublicHeader />
 
       <section className="marketing-hero" id="main-content">
         <div className="marketing-hero-copy">
@@ -351,17 +335,7 @@ export default function MarketingHome() {
         </Link>
       </section>
 
-      <footer className="marketing-footer">
-        <Link className="marketing-brand" href="/">
-          <span className="marketing-brand-mark"><LockKeyhole size={16} /></span>
-          <span>mandate</span>
-        </Link>
-        <p>
-          Deterministic authorization controls for simulated AI-agent payments.
-          Updated August 14, 2026 by the Mandate project maintainers.
-        </p>
-        <div><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a></div>
-      </footer>
+      <PublicFooter />
     </main>
   );
 }

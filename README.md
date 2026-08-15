@@ -62,6 +62,18 @@ Risk and policy outputs are stored independently. Human resolution creates a new
 5. Open **Agents** to pause/resume an agent or require approval for all future transactions.
 6. Open **Create Mandate**, interpret the example intent, review the structured policy, and activate it.
 
+## Public learning surfaces
+
+The public site includes an authored editorial layer for buyers, operators, and developers who are still learning the agentic-commerce model:
+
+- `/resources` — the index for field guides, product reference, and editorial analysis.
+- `/learn/agentic-commerce` — a practical end-to-end guide from user intent to authorization evidence.
+- `/knowledge` — the product vocabulary and operating model for agents, mandates, decisions, risk, scoped keys, and audit events.
+- `/faq` — substantive answers about product boundaries, security, integrations, and production use.
+- `/blog` — the editorial index, including launch essays on separation of powers, auditable purchase requests, and policy-versus-risk precedence.
+
+These pages explain current industry protocol direction only as context. They do not claim that Mandate integrates with AP2, UCP, Visa, Stripe, or any payment network.
+
 ## Implemented production foundation
 
 - Password signup/login and Google Identity Services signup with server-verified ID tokens and short-lived Mandate access tokens.

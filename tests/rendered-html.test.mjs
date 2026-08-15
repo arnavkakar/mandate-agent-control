@@ -58,6 +58,30 @@ test("publishes indexable trust pages and machine-readable policy files",async()
  assert.match(await security.text(),/security\/advisories\/new/i);
 });
 
+test("publishes the resource center and substantive learning routes",async()=>{
+ for(const [path,needle] of [
+  ["/resources",/field guide to controlled agentic commerce/i],
+  ["/learn/agentic-commerce",/Agentic commerce is a purchasing journey/i],
+  ["/knowledge",/Mandate knowledge base/i],
+  ["/faq",/Questions worth answering before an agent can spend/i],
+  ["/blog",/Writing about authority before autonomy/i],
+  ["/blog/agentic-commerce-needs-separation-of-powers",/Delegated action needs an independent authorization boundary/i],
+  ["/blog/from-user-intent-to-auditable-purchase-request",/useful unit is a trace/i],
+  ["/blog/risk-scores-should-not-override-policy",/Risk may make an eligible request more restrictive/i],
+ ]){
+  const response=await renderPath(path);
+  assert.equal(response.status,200);
+  const html=await response.text();
+  assert.match(html,needle);
+  assert.doesNotMatch(html,/robots[^>]+noindex/i);
+ }
+ const sitemap=await renderPath("/sitemap.xml");
+ assert.equal(sitemap.status,200);
+ const xml=await sitemap.text();
+ assert.match(xml,/learn\/agentic-commerce/i);
+ assert.match(xml,/blog\/risk-scores-should-not-override-policy/i);
+});
+
 test("ships the authorization data model and safety thesis",async()=>{
  const [schema,readme,page]=await Promise.all([
   readFile(new URL("../db/schema.ts",import.meta.url),"utf8"),

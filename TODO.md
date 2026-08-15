@@ -86,7 +86,8 @@ This file is the durable handoff for the next engineer or agent. Do not infer co
 - [x] Local production build, lint, and four rendered-route regression tests pass for the complete trust/SEO surface.
 - [x] Fix the Railway/vinext root-route mismatch locally; lint, production build, and rendered-route tests pass.
 - [x] Deploy the route fix and run fresh production schema, sitemap, GEO, and performance checks; results and limitations are recorded in `SEO-BASELINE.md`.
-- [ ] Connect Google Search Console and submit `https://mandate-agent.com/sitemap.xml` only after root canonical/indexing is correct.
+- [x] Connect Google Search Console, verify ownership, and submit `https://mandate-agent.com/sitemap.xml` after root canonical/indexing was corrected.
+- [x] Publish the editorial Resource Center, practical agentic-commerce field guide, working knowledge base, substantive FAQ, blog index, and three launch essays with canonical metadata and internal navigation.
 - [x] Add privacy, terms, security, and responsible-disclosure pages before public acquisition.
 
 ## Approved SEO and site architecture direction
@@ -158,7 +159,7 @@ Do not start broad programmatic SEO yet. Mandate does not have enough proprietar
 
 1. Build product pages for policy, approvals, risk, and audit evidence.
 2. Build the three initial use-case pages with distinct workflows and examples—not variable-swapped templates.
-3. Build the three resource pillar pages and interlink them to product and developer pages.
+3. Expand the shipped resource foundation with dedicated pillar pages for agent-payment authorization, deterministic authorization, and human-in-the-loop payments; interlink them to product and developer pages.
 4. Add a transparent pricing/availability page even if the initial state is “portfolio MVP / early access.” Do not invent customers, performance metrics, or integrations.
 5. Instrument first-party product analytics and conversion events only after the privacy disclosure is ready.
 
