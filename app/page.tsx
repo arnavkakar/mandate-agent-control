@@ -43,13 +43,40 @@ const responseExample = `{
 export default function MarketingHome() {
   const softwareSchema = {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "Mandate",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    description:
-      "A programmable authorization and risk-control layer for simulated AI-agent payments.",
-    url: "https://mandate-agent.com/",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://mandate-agent.com/#organization",
+        name: "Mandate",
+        url: "https://mandate-agent.com/",
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://mandate-agent.com/#website",
+        name: "Mandate",
+        url: "https://mandate-agent.com/",
+        publisher: { "@id": "https://mandate-agent.com/#organization" },
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://mandate-agent.com/#webpage",
+        name: "Mandate — Authorization controls for AI-agent spending",
+        url: "https://mandate-agent.com/",
+        isPartOf: { "@id": "https://mandate-agent.com/#website" },
+        about: { "@id": "https://mandate-agent.com/#software" },
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://mandate-agent.com/#software",
+        name: "Mandate",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description:
+          "A programmable authorization and risk-control layer for simulated AI-agent payments.",
+        url: "https://mandate-agent.com/",
+        author: { "@id": "https://mandate-agent.com/#organization" },
+      },
+    ],
   };
 
   return (
@@ -159,6 +186,27 @@ export default function MarketingHome() {
         <span>Human approval when required</span>
         <span>Machine-readable reasons</span>
       </div>
+
+      <section className="marketing-section definition-section">
+        <p className="marketing-context">Plain-language definition</p>
+        <h2>What is AI-agent payment authorization?</h2>
+        <p>
+          AI-agent payment authorization is the control process that determines
+          whether software acting on a person’s or company’s behalf may make a
+          purchase. An agent can propose a merchant, amount, category, and country,
+          but it should not decide its own financial permissions. Mandate checks the
+          request against an active, versioned policy covering identity, status,
+          available budget, transaction limits, merchant and category rules,
+          geography, expiration, and review conditions. The deterministic engine
+          then returns one of three machine-readable outcomes: APPROVED,
+          APPROVAL_REQUIRED, or DECLINED. Risk signals may escalate a request for
+          human review, but they cannot erase a hard policy failure. The language
+          model is limited to converting human instructions into a proposed rule
+          structure. A person reviews and activates that structure. This separation
+          makes automated purchasing least-privilege, explainable, revocable, and
+          auditable without representing that a real payment has occurred.
+        </p>
+      </section>
 
       <section className="marketing-section mechanism-section" id="how-it-works">
         <div className="section-intro">
@@ -307,7 +355,7 @@ export default function MarketingHome() {
           <span className="marketing-brand-mark"><LockKeyhole size={16} /></span>
           <span>mandate</span>
         </Link>
-        <p>Deterministic authorization controls for simulated AI-agent payments.</p>
+        <p>Deterministic authorization controls for simulated AI-agent payments. Reviewed August 14, 2026.</p>
         <div><Link href="/security">Security</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="https://github.com/arnavkakar/mandate-agent-control">GitHub</a></div>
       </footer>
     </main>

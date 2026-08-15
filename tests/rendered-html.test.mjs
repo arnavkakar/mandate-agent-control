@@ -24,6 +24,10 @@ test("server-renders the public Mandate product page",async()=>{
  assert.match(html,/<title>Mandate — Authorization controls for AI-agent spending<\/title>/i);
  assert.match(html,/AI agents can request/i);
  assert.match(html,/Mandate decides whether they may spend/i);
+ assert.match(html,/What is AI-agent payment authorization/i);
+ assert.match(html,/"@type":"Organization"/i);
+ assert.match(html,/"@type":"WebSite"/i);
+ assert.match(html,/"@type":"WebPage"/i);
  assert.match(html,/Simulation only/i);
  assert.match(html,/type="module"/);
  assert.doesNotMatch(html,/codex-preview|Your site is taking shape/);
