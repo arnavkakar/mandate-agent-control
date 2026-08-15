@@ -40,8 +40,19 @@ function isSameOriginMutation(request: Request) {
   const requestUrl = new URL(request.url);
   const origin = request.headers.get("origin");
   const fetchSite = request.headers.get("sec-fetch-site");
+  const forwardedHost = request.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    ?.trim();
+  const forwardedProtocol = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    ?.trim();
+  const publicHost = forwardedHost ?? request.headers.get("host") ?? requestUrl.host;
+  const publicProtocol = forwardedProtocol ?? requestUrl.protocol.replace(":", "");
+  const publicOrigin = `${publicProtocol}://${publicHost}`;
   return (
-    origin === requestUrl.origin &&
+    origin === publicOrigin &&
     (!fetchSite || fetchSite === "same-origin" || fetchSite === "same-site")
   );
 }

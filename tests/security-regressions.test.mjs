@@ -30,9 +30,14 @@ test("rejects cross-site state-changing dashboard API requests", async () => {
 test("logout clears only HttpOnly same-site session cookies", async () => {
   const app = await worker();
   const response = await app.fetch(
-    new Request("https://mandate-agent.com/api/mandate/v1/auth/logout", {
+    new Request("http://mandate-web.railway.internal/api/mandate/v1/auth/logout", {
       method: "POST",
-      headers: { origin: "https://mandate-agent.com", "sec-fetch-site": "same-origin" },
+      headers: {
+        origin: "https://mandate-agent.com",
+        "sec-fetch-site": "same-origin",
+        "x-forwarded-host": "mandate-agent.com",
+        "x-forwarded-proto": "https",
+      },
     }),
     env,
     context,
