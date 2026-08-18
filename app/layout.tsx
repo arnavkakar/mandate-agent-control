@@ -31,4 +31,16 @@ export async function generateMetadata():Promise<Metadata>{
   twitter:{card:"summary_large_image",title:"Mandate — Authorization controls for AI-agent spending",description:"Deterministic authorization and risk controls for AI-agent purchase requests.",images:[socialImage]},
  };
 }
-export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body className={`${sans.variable} ${mono.variable}`}>{children}</body></html>}
+export default function RootLayout({children}:{children:React.ReactNode}){
+ return <html lang="en">
+  <head>
+   {/* Keep explicit links here as a cross-runtime fallback. Vinext currently
+       drops inherited icon metadata on routes that export page metadata. */}
+   <link rel="icon" href="/favicon.ico?v=3" sizes="32x32" />
+   <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" sizes="any" />
+   <link rel="shortcut icon" href="/favicon.ico?v=3" />
+   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" sizes="180x180" />
+  </head>
+  <body className={`${sans.variable} ${mono.variable}`}>{children}</body>
+ </html>
+}
