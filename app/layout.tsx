@@ -19,7 +19,14 @@ export async function generateMetadata():Promise<Metadata>{
   keywords:["AI agent payments","agent authorization","AI spending controls","programmable authorization","agentic commerce","human approval workflow"],
   alternates:{canonical:"/"},
   robots:{index:true,follow:true},
-  icons:{icon:"/favicon.svg",shortcut:"/favicon.svg"},
+  icons:{
+   icon:[
+    {url:"/favicon-32.png?v=2",type:"image/png",sizes:"32x32"},
+    {url:"/favicon.svg?v=2",type:"image/svg+xml",sizes:"any"},
+   ],
+   shortcut:[{url:"/favicon-32.png?v=2",type:"image/png",sizes:"32x32"}],
+   apple:[{url:"/apple-touch-icon.png?v=2",type:"image/png",sizes:"180x180"}],
+  },
   openGraph:{title:"Mandate — Authorization controls for AI-agent spending",description:"Deterministic policy, human approvals, risk controls, and explainable decisions for agent purchase requests.",url:"/",siteName:"Mandate",images:[{url:socialImage,width:1200,height:630,alt:"Mandate authorization control layer"}],type:"website"},
   twitter:{card:"summary_large_image",title:"Mandate — Authorization controls for AI-agent spending",description:"Deterministic authorization and risk controls for AI-agent purchase requests.",images:[socialImage]},
  };
