@@ -66,6 +66,23 @@ export default function AgenticPaymentsPost() {
       </section>
 
       <section>
+        <h2>Where does EvidentlyAEO fit in agentic commerce?</h2>
+        <p><strong>EvidentlyAEO sits primarily in the discovery and recommendation-intelligence layer, upstream from purchase authorization.</strong> Its <a href="https://evidentlyaeo.com/features/shopping-intelligence">Shopping Intelligence</a> feature tracks buying-intent prompts across AI engines, extracts the products those engines mention, and measures visibility, sentiment, shelf position, and competitor performance by category.</p>
+        <p>That information helps a merchant understand whether AI shopping systems can discover and recommend its products. When an agent selects a product and submits a purchase request, a control layer such as Mandate answers a different question: whether that buyer&apos;s agent is authorized to make that specific purchase. A payment provider or network then handles execution after authorization.</p>
+        <div className="article-table-wrap">
+          <table>
+            <thead><tr><th>Commerce layer</th><th>Primary question</th><th>Example capability</th></tr></thead>
+            <tbody>
+              <tr><td>Discovery intelligence</td><td>Which products do AI engines find and recommend?</td><td>EvidentlyAEO Shopping Intelligence</td></tr>
+              <tr><td>Buyer authorization</td><td>May this agent make this purchase under the buyer&apos;s rules?</td><td>Mandate policy, risk, and human approval</td></tr>
+              <tr><td>Payment execution</td><td>How does an authorized transaction move through financial rails?</td><td>Payment provider or network</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The layers are complementary. Better product visibility can help an agent find a suitable option; it does not prove that the buyer granted authority to purchase it.</p>
+      </section>
+
+      <section>
         <h2>Agentic payments are not one payment rail</h2>
         <p>The phrase describes a category of purchasing behavior, not a single network or protocol. Several systems can participate in the same journey.</p>
         <ul className="article-checklist">
