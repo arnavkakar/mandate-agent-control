@@ -24,7 +24,7 @@ export async function generateMetadata():Promise<Metadata>{
     {url:"/favicon-32.png?v=2",type:"image/png",sizes:"32x32"},
     {url:"/favicon.svg?v=2",type:"image/svg+xml",sizes:"any"},
    ],
-   shortcut:[{url:"/favicon-32.png?v=2",type:"image/png",sizes:"32x32"}],
+   shortcut:"/favicon-32.png?v=2",
    apple:[{url:"/apple-touch-icon.png?v=2",type:"image/png",sizes:"180x180"}],
   },
   openGraph:{title:"Mandate — Authorization controls for AI-agent spending",description:"Deterministic policy, human approvals, risk controls, and explainable decisions for agent purchase requests.",url:"/",siteName:"Mandate",images:[{url:socialImage,width:1200,height:630,alt:"Mandate authorization control layer"}],type:"website"},
