@@ -5,7 +5,7 @@ import { BLOG_AUTHOR } from "../posts";
 const canonical = "/blog/what-are-agentic-payments";
 
 export const metadata: Metadata = {
-  title: "What Are Agentic Payments? How AI-Agent Payments Work",
+  title: "What Are Agentic Payments? A Practical Guide",
   description: "Learn how agentic payments work across intent, authorization, checkout, payment execution, and audit evidence—with one practical business example.",
   alternates: { canonical },
   authors: [{ name: BLOG_AUTHOR }],

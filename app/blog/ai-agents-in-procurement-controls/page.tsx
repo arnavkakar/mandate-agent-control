@@ -5,7 +5,7 @@ import { BLOG_AUTHOR } from "../posts";
 const canonical = "/blog/ai-agents-in-procurement-controls";
 
 export const metadata: Metadata = {
-  title: "AI Agents in Procurement: Use Cases, Risks, and Controls",
+  title: "AI Agents in Procurement: Use Cases and Controls",
   description: "Learn where AI agents can help procurement, which purchasing actions require deterministic controls, and how to design budgets and approvals.",
   alternates: { canonical },
   authors: [{ name: BLOG_AUTHOR }],

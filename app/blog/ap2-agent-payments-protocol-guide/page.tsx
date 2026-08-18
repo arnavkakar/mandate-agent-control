@@ -5,7 +5,7 @@ import { BLOG_AUTHOR } from "../posts";
 const canonical = "/blog/ap2-agent-payments-protocol-guide";
 
 export const metadata: Metadata = {
-  title: "AP2 Agent Payments Protocol Guide: Mandates Explained",
+  title: "AP2 Protocol Guide: Agent Payment Mandates",
   description: "Understand AP2, its intent, checkout, and payment mandates, how signed authorization works, and where internal spending controls still fit.",
   alternates: { canonical },
   authors: [{ name: BLOG_AUTHOR }],
