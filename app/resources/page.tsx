@@ -26,6 +26,13 @@ const foundations = [
     meta: "12 min",
   },
   {
+    href: "/blog/what-are-agentic-payments",
+    title: "What are agentic payments?",
+    description: "Understand the five layers behind an AI-agent payment: intent, identity, authorization, execution, and evidence.",
+    type: "Pillar guide",
+    meta: "13 min",
+  },
+  {
     href: "/faq",
     title: "Agentic commerce and Mandate FAQs",
     description: "Plain answers about agents, mandates, approvals, API keys, risk, privacy, and the simulation boundary.",
@@ -59,6 +66,20 @@ const productReferences = [
 ];
 
 const editorial = [
+  {
+    href: "/blog/ap2-agent-payments-protocol-guide",
+    title: "AP2 and the agent payments protocol, explained",
+    description: "A practical guide to typed mandates, signed intent, and protocol-level authorization evidence.",
+    type: "Protocol guide",
+    meta: "11 min",
+  },
+  {
+    href: "/blog/ai-agents-in-procurement-controls",
+    title: "AI agents in procurement: where controls belong",
+    description: "A business use case for budgets, suppliers, approval thresholds, and controlled purchasing authority.",
+    type: "Use-case guide",
+    meta: "12 min",
+  },
   {
     href: "/blog/agentic-commerce-needs-separation-of-powers",
     title: "Agentic commerce needs a separation of powers",
@@ -99,9 +120,9 @@ export default function ResourcesPage() {
         </header>
 
         <nav className="resource-index-band" aria-label="Resource sections">
-          <a href="#foundations"><BookOpen size={17} /> Foundations <span>02</span></a>
+          <a href="#foundations"><BookOpen size={17} /> Foundations <span>03</span></a>
           <a href="#product-reference"><ShieldCheck size={17} /> Product reference <span>03</span></a>
-          <a href="#editorial"><FileText size={17} /> Editorial <span>03</span></a>
+          <a href="#editorial"><FileText size={17} /> Editorial <span>05</span></a>
           <a href="/faq"><HelpCircle size={17} /> FAQs <span>24</span></a>
         </nav>
 

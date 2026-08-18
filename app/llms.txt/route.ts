@@ -8,6 +8,9 @@ const llmsText = `# Mandate
 - [Knowledge Base](https://mandate-agent.com/knowledge): Agents, mandates, decisions, risk, API keys, and audit evidence.
 - [FAQs](https://mandate-agent.com/faq): Plain-language answers about agentic commerce and Mandate.
 - [Blog](https://mandate-agent.com/blog): Essays about authority, risk, and accountable agent action.
+- [Agentic payments guide](https://mandate-agent.com/blog/what-are-agentic-payments): How intent, identity, authorization, execution, and audit evidence fit together.
+- [AP2 protocol guide](https://mandate-agent.com/blog/ap2-agent-payments-protocol-guide): Typed mandates and verifiable authorization for agent-led commerce.
+- [AI agents in procurement](https://mandate-agent.com/blog/ai-agents-in-procurement-controls): Procurement use cases, budgets, supplier rules, and human approval.
 - [Platform comparison](https://mandate-agent.com/compare): Evidence-based comparison of Mandate, Skyfire, Stripe Issuing, and Ramp.
 - [AI-agent payment mandates](https://mandate-agent.com/blog/what-is-an-ai-agent-payment-mandate): Definition, lifecycle, rules, credentials, and audit evidence.
 - [AI-agent spending limits](https://mandate-agent.com/blog/how-to-set-spending-limits-for-ai-agents): Practical least-privilege policy design.

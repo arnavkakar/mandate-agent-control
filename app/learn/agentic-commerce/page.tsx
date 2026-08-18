@@ -18,8 +18,9 @@ export default function AgenticCommerceGuide() {
         canonical="/learn/agentic-commerce"
         readingTime="12 minute guide"
         related={[
+          { href: "/blog/what-are-agentic-payments", title: "What are agentic payments?", description: "Go deeper on intent, authorization, execution, and evidence.", type: "Pillar guide" },
           { href: "/knowledge", title: "Mandate knowledge base", description: "Reference the controls that govern an authorization request.", type: "Reference" },
-          { href: "/blog/agentic-commerce-needs-separation-of-powers", title: "Agentic commerce needs a separation of powers", description: "Why interpretation and financial authority must remain separate.", type: "Point of view" },
+          { href: "/blog/ai-agents-in-procurement-controls", title: "AI agents in procurement", description: "Apply the model to a practical business workflow.", type: "Use-case guide" },
         ]}
       >
         <section className="article-summary">

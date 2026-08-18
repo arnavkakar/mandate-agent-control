@@ -11,6 +11,30 @@ export type BlogPost = {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "what-are-agentic-payments",
+    title: "What are agentic payments?",
+    description: "A practical guide to how AI agents request, authorize, and execute payments—and why those jobs belong to separate systems.",
+    type: "Pillar guide",
+    readingTime: "13 min",
+    published: "2026-08-17",
+  },
+  {
+    slug: "ap2-agent-payments-protocol-guide",
+    title: "AP2 and the agent payments protocol, explained",
+    description: "How AP2 uses typed mandates, signed intent, and receipts to make agent-initiated purchases verifiable.",
+    type: "Protocol guide",
+    readingTime: "11 min",
+    published: "2026-08-17",
+  },
+  {
+    slug: "ai-agents-in-procurement-controls",
+    title: "AI agents in procurement: where controls belong",
+    description: "How procurement agents can help with sourcing and purchasing while budgets, suppliers, and approvals remain governed.",
+    type: "Use-case guide",
+    readingTime: "12 min",
+    published: "2026-08-17",
+  },
+  {
     slug: "how-to-set-spending-limits-for-ai-agents",
     title: "How to set spending limits for AI agents",
     description: "A practical framework for budgets, transaction caps, merchant rules, review thresholds, and emergency controls.",

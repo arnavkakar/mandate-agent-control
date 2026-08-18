@@ -1,0 +1,65 @@
+{
+  "generated": "2026-08-17",
+  "methodology": {
+    "primarySource": "Ahrefs Free Keyword Generator",
+    "secondarySource": "KeywordVolumeChecker AI estimates",
+    "validation": "Live SERP review with primary-source preference",
+    "caveat": "Secondary volume and KD figures are directional estimates, not measured facts. Ahrefs often returned <100 or no data for niche terms."
+  },
+  "clusters": [
+    {
+      "name": "agentic-payments",
+      "intent": ["informational", "commercial-investigation"],
+      "primaryKeyword": "agentic payments",
+      "secondaryKeywords": ["AI agent payments", "how agentic payments work", "AI payments agent"],
+      "difficulty": "medium",
+      "canonicalUrl": "/blog/what-are-agentic-payments",
+      "status": "implemented"
+    },
+    {
+      "name": "agent-payment-protocols",
+      "intent": ["informational", "technical"],
+      "primaryKeyword": "agent payments protocol",
+      "secondaryKeywords": ["AP2 protocol", "AP2 mandates", "agent payment mandate protocol"],
+      "difficulty": "low-directional",
+      "canonicalUrl": "/blog/ap2-agent-payments-protocol-guide",
+      "status": "implemented"
+    },
+    {
+      "name": "procurement-agents",
+      "intent": ["informational", "use-case-investigation"],
+      "primaryKeyword": "AI agents in procurement",
+      "secondaryKeywords": ["AI agent procurement", "procurement agent controls", "AI procurement automation"],
+      "difficulty": "medium",
+      "canonicalUrl": "/blog/ai-agents-in-procurement-controls",
+      "status": "implemented"
+    },
+    {
+      "name": "spending-controls",
+      "intent": ["informational", "solution-aware"],
+      "primaryKeyword": "AI agent spending limits",
+      "secondaryKeywords": ["AI agent spending controls", "AI agent budget controls"],
+      "difficulty": "low-to-medium-directional",
+      "canonicalUrl": "/blog/how-to-set-spending-limits-for-ai-agents",
+      "status": "existing-owner"
+    },
+    {
+      "name": "payment-mandates",
+      "intent": ["informational", "technical"],
+      "primaryKeyword": "AI agent payment mandate",
+      "secondaryKeywords": ["programmable authorization", "AI payment authorization"],
+      "difficulty": "low-volume-unknown",
+      "canonicalUrl": "/blog/what-is-an-ai-agent-payment-mandate",
+      "status": "existing-owner"
+    },
+    {
+      "name": "agentic-commerce",
+      "intent": ["informational"],
+      "primaryKeyword": "what is agentic commerce",
+      "secondaryKeywords": ["agentic commerce", "how agentic commerce works"],
+      "difficulty": "hard",
+      "canonicalUrl": "/learn/agentic-commerce",
+      "status": "existing-pillar"
+    }
+  ]
+}
